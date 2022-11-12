@@ -1,0 +1,2 @@
+sshfs -p 50022 mahadeva@198.244.189.67:/home/mahadeva/testdir /home/mahadeva/testdir
+
