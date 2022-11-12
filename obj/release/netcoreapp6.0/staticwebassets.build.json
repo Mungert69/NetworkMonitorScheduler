@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "FBvFUMbUSCBwKbJ5aw0Ci57ZWvcHHFo2bM2n3baULAY=",
+  "Source": "NetworkMonitor",
+  "BasePath": "_content/NetworkMonitor",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

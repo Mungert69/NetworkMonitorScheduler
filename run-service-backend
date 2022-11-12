@@ -1,0 +1,2 @@
+docker stack deploy --compose-file=docker-compose-run-backend.yml networkmonitor-backend --with-registry-auth
+
