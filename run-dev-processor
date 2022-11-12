@@ -1,1 +1,0 @@
-docker compose -f docker-compose-dev-processor.yml up -d

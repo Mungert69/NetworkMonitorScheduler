@@ -1,3 +1,0 @@
-docker cp ./appsettings-1.json containerID:/app
-docker commit containerID imagename
-
