@@ -1,0 +1,1 @@
+docker run   -v ~/sqldata:/var/lib/mysql -p 127.0.0.1:3306:3306 --restart always --detach --network monitornetwork --name monitordb --env MARIADB_USER=admin --env MARIADB_PASSWORD=Ac.0462110 --env MARIADB_DATABASE=MonitorDB mungert/mariadb:0.1.2

@@ -1,0 +1,4 @@
+git pull https://mungert69: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@github.com/Mungert69/NetworkMonitor
+sudo systemctl stop NetworkMonitor
+dotnet publish -c Release  -o ../services/NetworkMonitor
+sudo systemctl start NetworkMonitor

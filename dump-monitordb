@@ -1,0 +1,2 @@
+mysqldump -u admin -p MonitorDB  > ~/data-dump.sql
+
