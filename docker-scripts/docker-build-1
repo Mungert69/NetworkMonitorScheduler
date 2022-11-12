@@ -1,4 +1,0 @@
-git pull https://mungert69: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@github.com/Mungert69/NetworkMonitor
-docker build -f ./Dockerfile-1 --rm  -t mungert/networkmonitor-1:0.1.5 .
-docker push mungert/networkmonitor-1:0.1.5
-

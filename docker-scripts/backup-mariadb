@@ -1,1 +1,0 @@
-docker run --rm --volumes-from 6f  -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar ./var/lib/mysql

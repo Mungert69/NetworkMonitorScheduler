@@ -1,1 +1,0 @@
-ssh -L 3337:localhost:3306 mahadeva@51.89.151.14 -p 50022

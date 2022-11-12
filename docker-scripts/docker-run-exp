@@ -1,2 +1,0 @@
-docker run -it  -p 2053:2053 --restart always --detach --network monitornetwork --name networkmonitor  mungert/networkmonitor:0.1.4
-
