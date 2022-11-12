@@ -1,1 +1,0 @@
-dotnet publish -c Release -o /home/mahadeva/code/services/NetworkMonitor

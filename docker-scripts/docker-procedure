@@ -1,9 +1,0 @@
-1: check version numbers in files docker-build and docker-run
-2: run ./docker-build
-3: run ./docker-run
-3: read docker-add-file we need to add appsetting-1.json to image get containerid from docker ps note it has been started with previoud command
-4: docker push newimagename 
-5: Login to 2nd  server
-6  docker pull newimagename 
-7: check version numer in file docker-run
-8: run docker-run 

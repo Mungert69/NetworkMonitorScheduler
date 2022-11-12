@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "jETpxeFKIZbOKyfUFOHS5GT9T21CxcGfMKhBkNyPwq5JjlPbfY2bcWDWhPM5JTWpOOHCOouphlKXVzbUNUNHVg==",
+  "dgSpecHash": "rx0N/E1McbQDc8WTHWtrpt0pSDSJe0y0gThUEgzQ69VN5OI8tAva7wI7kYoxHFYvVYadRMO7Htrzv553YPlG3g==",
   "success": true,
-  "projectFilePath": "/home/mahadeva/code/NetworkMonitor/NetworkMonitor.csproj",
+  "projectFilePath": "/home/mahadeva/code/NetworkMonitorScheduler/NetworkMonitor.csproj",
   "expectedPackageFiles": [
     "/home/mahadeva/.nuget/packages/auth0.authenticationapi/7.17.3/auth0.authenticationapi.7.17.3.nupkg.sha512",
     "/home/mahadeva/.nuget/packages/auth0.core/7.17.3/auth0.core.7.17.3.nupkg.sha512",
