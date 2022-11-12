@@ -1,0 +1,4 @@
+git pull https://mungert69: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@github.com/Mungert69/NetworkMonitor
+docker build -f ./Dockerfile-roundhouse --rm  -t mungert/networkmonitor-roundhouse:0.1.5 .
+docker push mungert/networkmonitor-roundhouse:0.1.5
+

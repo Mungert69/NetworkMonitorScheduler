@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  networkmonitor:
+    image: mungert/networkmonitor:0.1.12
+    restart : unless-stopped
+    container_name : monitorservice 
+    ports:
+      - 2053:2053
+    stop_grace_period: 2m
+    depends_on:
+      - "mariadb"
+    volumes:
+      - ~/code/securefiles/appsettings-dev.json:/app/appsettings.json
+      - ~/code/securefiles/https.pfx:/app/https.pfx
+  mariadb:
+    image: mungert/mariadb:0.1.3
+    ports:
+      - 127.0.0.1:3306:3306
+    volumes:
+      - ~/sqldata:/var/lib/mysql
+    restart: always
+    container_name : monitordb
+    environment:
+      MARIADB_USER : admin
+      MARIADB_PASSWORD : Ac.0462110
+      MARIADB_DATABASE : MonitorDB
+  mariabackup:
+    image: mungert/mariabackup:0.1.2
+    user: "0"
+    volumes:
+      - ~/sqlbackup:/db
+    restart: always
+    container_name: monitorbackup
+    environment:
+      DB_USER: admin
+      DB_PASS: Ac.0462110
+      DB_DUMP_TARGET: /db
+      DB_DUMP_FREQ: 1440
+      DB_SERVER: monitordb
+  networkmonitorreact:
+    image: mungert/networkmonitorreact-local:0.1.12
+    restart: always
+    container_name : monitorfrontend
+    ports:
+      - 443:443
+    volumes:
+      - ~/code/FreeNetworkMonitor/public/runConfig-dev.js:/var/www/html/runConfig.js
+      - ~/code/securefiles/server-freenetworkmonitor.crt:/etc/apache2/server.crt
+      - ~/code/securefiles/server-freenetworkmonitor.key:/etc/apache2/server.key
+
+networks:
+  default:
+    name: monitornetwork
+

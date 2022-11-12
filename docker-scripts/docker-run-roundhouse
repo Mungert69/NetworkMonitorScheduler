@@ -1,0 +1,2 @@
+docker run -it  -p 2053:2053 --restart always --detach --network monitornetwork --name networkmonitor  mungert/networkmonitor-roundhouse:0.1.5
+
