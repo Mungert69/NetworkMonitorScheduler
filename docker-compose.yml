@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   using-volumes:
-    image: mungert/networkmonitor:0.2.1
+    image: mungert/networkmonitorscheduler:0.0.1
     build:
       context: .
       dockerfile: ./Dockerfile

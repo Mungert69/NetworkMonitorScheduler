@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/mahadeva/code/NetworkMonitor/NetworkMonitor.csproj": {}
+    "/home/mahadeva/code/NetworkMonitorScheduler/NetworkMonitor.csproj": {}
   },
   "projects": {
-    "/home/mahadeva/code/NetworkMonitor/NetworkMonitor.csproj": {
+    "/home/mahadeva/code/NetworkMonitorScheduler/NetworkMonitor.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/mahadeva/code/NetworkMonitor/NetworkMonitor.csproj",
+        "projectUniqueName": "/home/mahadeva/code/NetworkMonitorScheduler/NetworkMonitor.csproj",
         "projectName": "NetworkMonitor",
-        "projectPath": "/home/mahadeva/code/NetworkMonitor/NetworkMonitor.csproj",
+        "projectPath": "/home/mahadeva/code/NetworkMonitorScheduler/NetworkMonitor.csproj",
         "packagesPath": "/home/mahadeva/.nuget/packages/",
-        "outputPath": "/home/mahadeva/code/NetworkMonitor/obj/",
+        "outputPath": "/home/mahadeva/code/NetworkMonitorScheduler/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/mahadeva/.nuget/NuGet/NuGet.Config"
