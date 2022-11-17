@@ -31,6 +31,7 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.2" />
     <PackageReference Include="SharpPcap" Version="6.2.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.23.1" />
+                    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
    </ItemGroup>
 
 

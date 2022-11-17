@@ -612,6 +612,86 @@
           "lib/netstandard1.0/_._": {}
         }
       },
+      "Mono.Posix.NETStandard/1.0.0": {
+        "type": "package",
+        "compile": {
+          "ref/netstandard2.0/Mono.Posix.NETStandard.dll": {}
+        },
+        "runtimeTargets": {
+          "runtimes/linux-arm/lib/netstandard2.0/Mono.Posix.NETStandard.dll": {
+            "assetType": "runtime",
+            "rid": "linux-arm"
+          },
+          "runtimes/linux-arm/native/libMonoPosixHelper.so": {
+            "assetType": "native",
+            "rid": "linux-arm"
+          },
+          "runtimes/linux-arm64/lib/netstandard2.0/Mono.Posix.NETStandard.dll": {
+            "assetType": "runtime",
+            "rid": "linux-arm64"
+          },
+          "runtimes/linux-arm64/native/libMonoPosixHelper.so": {
+            "assetType": "native",
+            "rid": "linux-arm64"
+          },
+          "runtimes/linux-armel/lib/netstandard2.0/Mono.Posix.NETStandard.dll": {
+            "assetType": "runtime",
+            "rid": "linux-armel"
+          },
+          "runtimes/linux-armel/native/libMonoPosixHelper.so": {
+            "assetType": "native",
+            "rid": "linux-armel"
+          },
+          "runtimes/linux-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll": {
+            "assetType": "runtime",
+            "rid": "linux-x64"
+          },
+          "runtimes/linux-x64/native/libMonoPosixHelper.so": {
+            "assetType": "native",
+            "rid": "linux-x64"
+          },
+          "runtimes/linux-x86/lib/netstandard2.0/Mono.Posix.NETStandard.dll": {
+            "assetType": "runtime",
+            "rid": "linux-x86"
+          },
+          "runtimes/linux-x86/native/libMonoPosixHelper.so": {
+            "assetType": "native",
+            "rid": "linux-x86"
+          },
+          "runtimes/osx/lib/netstandard2.0/Mono.Posix.NETStandard.dll": {
+            "assetType": "runtime",
+            "rid": "osx"
+          },
+          "runtimes/osx/native/libMonoPosixHelper.dylib": {
+            "assetType": "native",
+            "rid": "osx"
+          },
+          "runtimes/win-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll": {
+            "assetType": "runtime",
+            "rid": "win-x64"
+          },
+          "runtimes/win-x64/native/MonoPosixHelper.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          },
+          "runtimes/win-x64/native/libMonoPosixHelper.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          },
+          "runtimes/win-x86/lib/netstandard2.0/Mono.Posix.NETStandard.dll": {
+            "assetType": "runtime",
+            "rid": "win-x86"
+          },
+          "runtimes/win-x86/native/MonoPosixHelper.dll": {
+            "assetType": "native",
+            "rid": "win-x86"
+          },
+          "runtimes/win-x86/native/libMonoPosixHelper.dll": {
+            "assetType": "native",
+            "rid": "win-x86"
+          }
+        }
+      },
       "MySqlConnector/2.1.2": {
         "type": "package",
         "compile": {
@@ -1684,6 +1764,38 @@
         "runtime.json"
       ]
     },
+    "Mono.Posix.NETStandard/1.0.0": {
+      "sha512": "vSN/L1uaVwKsiLa95bYu2SGkF0iY3xMblTfxc8alSziPuVfJpj3geVqHGAA75J7cZkMuKpFVikz82Lo6y6LLdA==",
+      "type": "package",
+      "path": "mono.posix.netstandard/1.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net40/Mono.Posix.NETStandard.dll",
+        "mono.posix.netstandard.1.0.0.nupkg.sha512",
+        "mono.posix.netstandard.nuspec",
+        "ref/net40/Mono.Posix.NETStandard.dll",
+        "ref/netstandard2.0/Mono.Posix.NETStandard.dll",
+        "runtimes/linux-arm/lib/netstandard2.0/Mono.Posix.NETStandard.dll",
+        "runtimes/linux-arm/native/libMonoPosixHelper.so",
+        "runtimes/linux-arm64/lib/netstandard2.0/Mono.Posix.NETStandard.dll",
+        "runtimes/linux-arm64/native/libMonoPosixHelper.so",
+        "runtimes/linux-armel/lib/netstandard2.0/Mono.Posix.NETStandard.dll",
+        "runtimes/linux-armel/native/libMonoPosixHelper.so",
+        "runtimes/linux-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll",
+        "runtimes/linux-x64/native/libMonoPosixHelper.so",
+        "runtimes/linux-x86/lib/netstandard2.0/Mono.Posix.NETStandard.dll",
+        "runtimes/linux-x86/native/libMonoPosixHelper.so",
+        "runtimes/osx/lib/netstandard2.0/Mono.Posix.NETStandard.dll",
+        "runtimes/osx/native/libMonoPosixHelper.dylib",
+        "runtimes/win-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll",
+        "runtimes/win-x64/native/MonoPosixHelper.dll",
+        "runtimes/win-x64/native/libMonoPosixHelper.dll",
+        "runtimes/win-x86/lib/netstandard2.0/Mono.Posix.NETStandard.dll",
+        "runtimes/win-x86/native/MonoPosixHelper.dll",
+        "runtimes/win-x86/native/libMonoPosixHelper.dll"
+      ]
+    },
     "MySqlConnector/2.1.2": {
       "sha512": "JVokQTUNN3WHAu9Vw8ieeq1dXTFokJiig5P0VJ4f439UxRrsPo6SaVWC8Zdm6mkPeQFhZ0/9afdWa02EY/1j/w==",
       "type": "package",
@@ -2278,6 +2390,7 @@
       "Microsoft.AspNetCore.TestHost >= 6.0.10",
       "Microsoft.EntityFrameworkCore >= 6.0.10",
       "Microsoft.EntityFrameworkCore.Relational >= 6.0.10",
+      "Mono.Posix.NETStandard >= 1.0.0",
       "Pomelo.EntityFrameworkCore.MySql >= 6.0.2",
       "SharpPcap >= 6.2.2",
       "System.IdentityModel.Tokens.Jwt >= 6.23.1",
@@ -2291,9 +2404,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/mahadeva/code/NetworkMonitorScheduler/NetworkMonitor.csproj",
-      "projectName": "NetworkMonitor",
-      "projectPath": "/home/mahadeva/code/NetworkMonitorScheduler/NetworkMonitor.csproj",
+      "projectUniqueName": "/home/mahadeva/code/NetworkMonitorScheduler/NetworkMonitorScheduler.csproj",
+      "projectName": "NetworkMonitorScheduler",
+      "projectPath": "/home/mahadeva/code/NetworkMonitorScheduler/NetworkMonitorScheduler.csproj",
       "packagesPath": "/home/mahadeva/.nuget/packages/",
       "outputPath": "/home/mahadeva/code/NetworkMonitorScheduler/obj/",
       "projectStyle": "PackageReference",
@@ -2354,6 +2467,10 @@
             "target": "Package",
             "version": "[6.0.10, )"
           },
+          "Mono.Posix.NETStandard": {
+            "target": "Package",
+            "version": "[1.0.0, )"
+          },
           "Pomelo.EntityFrameworkCore.MySql": {
             "target": "Package",
             "version": "[6.0.2, )"
@@ -2386,6 +2503,20 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[6.0.11, 6.0.11]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.linux-x64",
+            "version": "[6.0.11, 6.0.11]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[6.0.11, 6.0.11]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -2394,7 +2525,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/6.0.402/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/home/mahadeva/dotnet/sdk/7.0.100/RuntimeIdentifierGraph.json"
       }
     }
   }
