@@ -1,8 +1,8 @@
 {
   "Version": 1,
-  "Hash": "Oj1vO0nJhNir7cYcr+MOR13Yl3u5tgVHnJ6Xexcd0Xk=",
-  "Source": "NetworkMonitor",
-  "BasePath": "_content/NetworkMonitor",
+  "Hash": "7gMVVwOC7WgrxvpIXe+Oe9TYvcGsh+fzzOgpkCMTyAk=",
+  "Source": "NetworkMonitorScheduler",
+  "BasePath": "_content/NetworkMonitorScheduler",
   "Mode": "Default",
   "ManifestType": "Publish",
   "ReferencedProjectsConfiguration": [],
