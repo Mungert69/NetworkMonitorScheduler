@@ -25,7 +25,7 @@ namespace NetworkMonitor.Scheduler
 
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-              _logger.LogInformation("SCHEDULE  : Starting Save schedule ");
+              _logger.LogInformation("SCHEDULE  : Starting Alert schedule ");
                
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
