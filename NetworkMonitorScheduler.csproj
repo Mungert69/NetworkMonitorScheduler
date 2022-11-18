@@ -8,6 +8,8 @@
     <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:7.0-jammy-amd64</ContainerBaseImage>
     <ContainerImageName>mungert/networkmonitorscheduler</ContainerImageName>
     <ContainerImageTag>0.0.2</ContainerImageTag>
+    <ContainerRegistry>docker.io</ContainerRegistry>
+
 </PropertyGroup>
 
 
