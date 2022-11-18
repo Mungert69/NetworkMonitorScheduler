@@ -1,9 +1,0 @@
-version: "3.8"
-
-services:
-  using-volumes:
-    image: mungert/networkmonitorscheduler:0.0.1
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-
