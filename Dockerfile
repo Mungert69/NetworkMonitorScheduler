@@ -1,7 +1,7 @@
 
 # final stage/image
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-jammy-amd64
+FROM mcr.microsoft.com/dotnet/aspnet:7.0-jammy-amd64
 WORKDIR /app
-COPY bin/release/netcoreapp6.0/publish/  /app 
+COPY bin/release/netcoreapp7.0/publish/  /app 
 ENTRYPOINT ["dotnet","./NetworkMonitorScheduler.dll"]
 
