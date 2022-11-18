@@ -3,7 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp7.0</TargetFramework>
     <UserSecretsId>0de60d59-203b-45b8-857e-71ba0fb8045d</UserSecretsId>
-  </PropertyGroup>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+    <PublishProfile>DefaultContainer</PublishProfile>
+    <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:7.0-jammy-amd64</ContainerBaseImage>
+    <ContainerImageName>mungert/networkmonitorscheduler</ContainerImageName>
+    <ContainerImageTag>0.0.2</ContainerImageTag>
+</PropertyGroup>
 
 
   <ItemGroup>
@@ -27,6 +32,7 @@
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
+    <PackageReference Include="Microsoft.NET.Build.Containers" Version="0.2.7" />
     <PackageReference Include="ncrontab" Version="3.3.1" />
     <PackageReference Include="SharpPcap" Version="6.2.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.23.1" />
