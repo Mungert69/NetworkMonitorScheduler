@@ -1,14 +1,15 @@
 ﻿
 using Microsoft.Extensions.DependencyInjection;
-using NetworkMonitor.Objects;
+using NetworkMonitorScheduler.Services;
 using NetworkMonitor.Objects.ServiceMessage;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Dapr.Client;
 
-namespace NetworkMonitor.Scheduler
+namespace NetworkMonitorScheduler
 {
     public class PingScheduleTask : ScheduledProcessor
     {
@@ -16,40 +17,49 @@ namespace NetworkMonitor.Scheduler
         private ILogger _logger;
         private DaprClient _daprClient;
 
-        public PingScheduleTask(DaprClient daprClient,ILogger<PingScheduleTask> logger,IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
+        public PingScheduleTask(DaprClient daprClient, ILogger<PingScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-            _daprClient=daprClient;
+            _daprClient = daprClient;
             firstRun = true;
-            _logger=logger;
+            _logger = logger;
             string scheduleStr = config.GetValue<string>("PingSchedule");
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-             _logger.LogInformation("SCHEDULE : Starting Ping schedule ");
-               
+            _logger.LogInformation("SCHEDULE : Starting Ping schedule ");
+            IServiceState serviceState = serviceProvider.GetService<IServiceState>();
+
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
-                 bool isDaprReady = _daprClient.CheckHealthAsync().Result;
-            if (isDaprReady)
-            {
-                _logger.LogInformation("Dapr Client Status is healthy");
-                  ProcessorConnectObj connectObj = new ProcessorConnectObj();
-                connectObj.NextRunInterval = RunScheduleInterval();
-                _daprClient.PublishEventAsync<ProcessorConnectObj>("pubsub", "processorConnect", connectObj);
-                _logger.LogDebug("Sent processorConnect event.");
-            }
-            else
-            {
-                _logger.LogCritical("Dapr Client Status is not healthy");
-            }
+                bool isDaprReady = _daprClient.CheckHealthAsync().Result;
+                if (isDaprReady)
+                {
+                    _logger.LogInformation("Dapr Client Status is healthy");
+                    ProcessorConnectObj connectObj = new ProcessorConnectObj();
+                    connectObj.NextRunInterval = RunScheduleInterval();
+                    if (serviceState.IsProcessorReady)
+                    {
+                        _daprClient.PublishEventAsync<ProcessorConnectObj>("pubsub", "processorConnect", connectObj);
+                        _logger.LogInformation("Sent processorConnect event.");
+                        serviceState.IsProcessorReady = false;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Processor has not signalled it is ready");
+                    }
+                }
+                else
+                {
+                    _logger.LogCritical("Dapr Client Status is not healthy");
+                }
 
 
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in PingScheduleTask.ProcesInScope() : Error Was : " + e.Message+ " Inner Exceptoin : "+e.InnerException.Message);
+                _logger.LogError("Error : occured in PingScheduleTask.ProcesInScope() : Error Was : " + e.Message + " Inner Exceptoin : " + e.InnerException.Message);
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;

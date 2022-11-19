@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetworkMonitor.Scheduler
+namespace NetworkMonitorScheduler
 {
     public abstract class ScheduledProcessor : ScopedProcessor
     {

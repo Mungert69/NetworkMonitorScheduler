@@ -2,13 +2,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
+using NetworkMonitorScheduler.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Dapr.Client;
 
 
-namespace NetworkMonitor.Scheduler
+namespace NetworkMonitorScheduler
 {
     public class SaveScheduleTask : ScheduledProcessor
     {
@@ -27,6 +28,7 @@ namespace NetworkMonitor.Scheduler
         {
 
             _logger.LogInformation("SCHEDULE  : Starting Save schedule ");
+            IServiceState serviceState = serviceProvider.GetService<IServiceState>();
 
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
@@ -35,8 +37,17 @@ namespace NetworkMonitor.Scheduler
                 if (isDaprReady)
                 {
                     _logger.LogInformation("Dapr Client Status is healthy");
-                    _daprClient.PublishEventAsync("pubsub", "monitorSaveData");
-                    _logger.LogInformation("Sent monitorSaveData event.");
+                    if (serviceState.IsMonitorServiceReady)
+                    {
+                        _daprClient.PublishEventAsync("pubsub", "monitorSaveData");
+                        _logger.LogInformation("Sent monitorSaveData event.");
+                        serviceState.IsMonitorServiceReady = false;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Processor has not signalled it is ready");
+                    }
+
                 }
                 else
                 {
