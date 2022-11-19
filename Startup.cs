@@ -1,4 +1,5 @@
-using NetworkMonitor.Scheduler;
+using NetworkMonitorScheduler;
+using NetworkMonitorScheduler.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,7 @@ namespace NetworkMonitor
             services.AddSingleton<IHostedService, SaveScheduleTask>();
             services.AddSingleton<IHostedService, AlertScheduleTask>();
             services.AddSingleton<IHostedService, PingScheduleTask>();
+            services.AddSingleton<IServiceState,ServiceState>();
 
             services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));
 
