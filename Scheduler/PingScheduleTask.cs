@@ -39,15 +39,20 @@ namespace NetworkMonitorScheduler
                     _logger.LogInformation("Dapr Client Status is healthy");
                     ProcessorConnectObj connectObj = new ProcessorConnectObj();
                     connectObj.NextRunInterval = RunScheduleInterval();
-                    if (serviceState.IsProcessorReady)
+                    foreach (ProcessorInstance procInst in serviceState.ProcessorInstances)
                     {
-                        _daprClient.PublishEventAsync<ProcessorConnectObj>("pubsub", "processorConnect", connectObj);
-                        _logger.LogInformation("Sent processorConnect event.");
-                        serviceState.IsProcessorReady = false;
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Processor has not signalled it is ready");
+
+                        if (procInst.IsReady)
+                        {
+                            _daprClient.PublishEventAsync<ProcessorConnectObj>("pubsub", "processorConnect" + procInst.ID, connectObj);
+                            _logger.LogInformation("Sent processorConnect event for appID "+procInst.ID);
+                            procInst.IsReady = false;
+
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Processor has not signalled it is ready");
+                        }
                     }
                 }
                 else
