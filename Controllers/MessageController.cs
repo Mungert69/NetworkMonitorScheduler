@@ -6,6 +6,7 @@ using NetworkMonitorScheduler.Services;
 using System;
 using System.Collections.Generic;
 using NetworkMonitor.Utils;
+using System.Linq;
 
 using Dapr;
 
@@ -35,8 +36,8 @@ namespace NetworkMonitorScheduler.Controllers
 
             try
             {
-                _serviceState.IsProcessorReady = processorObj.IsProcessorReady;
-                result.Message += "Success set ProcessorrReady to " + processorObj.IsProcessorReady;
+                _serviceState.ProcessorInstances.Where(w => w.ID==processorObj.AppID).First().IsReady = processorObj.IsProcessorReady;
+                result.Message += "Success set ProcessorrReady for AppID "+processorObj.AppID+" to " + processorObj.IsProcessorReady;
                 result.Success = true;
                 _logger.LogInformation(result.Message);
             }
