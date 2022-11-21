@@ -1,0 +1,1 @@
+dapr run --app-id monitorscheduler -d ./components-test --app-port 2056  --dapr-http-port 3502 --dapr-grpc-port 60003  dotnet run
