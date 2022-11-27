@@ -20,6 +20,7 @@ namespace NetworkMonitorScheduler
         public PingScheduleTask(DaprClient daprClient, ILogger<PingScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             _daprClient = daprClient;
+            _daprClient.SetMetadataAsync("ttlInSeconds","600");
             firstRun = true;
             _logger = logger;
             string scheduleStr = config.GetValue<string>("PingSchedule");
