@@ -18,6 +18,7 @@ namespace NetworkMonitorScheduler
         public AlertScheduleTask(DaprClient daprClient, ILogger<AlertScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             _daprClient = daprClient;
+            _daprClient.SetMetadataAsync("ttlInSeconds","600");
             _logger = logger;
             firstRun = true;
             string scheduleStr = config.GetValue<string>("AlertSchedule");
