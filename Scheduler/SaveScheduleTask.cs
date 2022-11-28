@@ -19,7 +19,6 @@ namespace NetworkMonitorScheduler
         public SaveScheduleTask(DaprClient daprClient, ILogger<SaveScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             _daprClient = daprClient;
-            _daprClient.SetMetadataAsync("ttlInSeconds","600");
             _logger = logger;
             string scheduleStr = config.GetValue<string>("SaveSchedule");
             updateSchedule(scheduleStr);
