@@ -26,7 +26,6 @@ namespace NetworkMonitorScheduler.Controllers
           
         }
         [Topic("pubsub", "processorReady")]
-        [TopicMetadata("ttlInSeconds", "600")]
         [HttpPost("processorReady")]
         [Consumes("application/json")]
         public ActionResult<ResultObj> ProcessorReady([FromBody] ProcessorInitObj processorObj)
@@ -54,7 +53,6 @@ namespace NetworkMonitorScheduler.Controllers
         }
 
         [Topic("pubsub", "alertServiceReady")]
-        [TopicMetadata("ttlInSeconds", "600")]
         [HttpPost("alertServiceReady")]
         [Consumes("application/json")]
         public ActionResult<ResultObj> AlertServiceReady([FromBody] AlertServiceInitObj alertObj)
@@ -82,7 +80,6 @@ namespace NetworkMonitorScheduler.Controllers
         }
 
         [Topic("pubsub", "monitorServiceReady")]
-        [TopicMetadata("ttlInSeconds", "600")]
         [HttpPost("monitorServiceReady")]
         [Consumes("application/json")]
         public ActionResult<ResultObj> MonitorServiceReady([FromBody] MonitorServiceInitObj monitorObj)
