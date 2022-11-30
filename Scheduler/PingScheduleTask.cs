@@ -51,7 +51,7 @@ namespace NetworkMonitorScheduler
                         }
                         else
                         {
-                            _logger.LogWarning("Processor has not signalled it is ready");
+                            _logger.LogWarning("Processor "+procInst.ID+" has not signalled it is ready");
                         }
                     }
                 }
