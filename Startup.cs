@@ -29,50 +29,23 @@ namespace NetworkMonitor
         public void ConfigureServices(IServiceCollection services)
         {
             _services = services;
-            services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAnyOrigin",
-                    builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-            });    
+
             services.AddSingleton<IHostedService, SaveScheduleTask>();
             services.AddSingleton<IHostedService, AlertScheduleTask>();
             services.AddSingleton<IHostedService, PingScheduleTask>();
-            services.AddSingleton<IServiceState,ServiceState>();
+            services.AddSingleton<IServiceState, ServiceState>();
 
             services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));
 
-            string domain = $"https://{Configuration["Auth0:Domain"]}/";
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-            }).AddJwtBearer(options =>
-            {
-                options.Authority = domain;
-                options.Audience = Configuration["Auth0:ApiIdentifier"];
-            });
-
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("read:messages", policy => policy.Requirements.Add(new HasScopeRequirement("read:messages", domain)));
-            });
-
-            // register the scope authorization handler
-            services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
-
-            /*services.AddControllers().AddNewtonsoftJson(options =>
-                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-            );*/
             services.AddControllers().AddDapr();
             services.AddLogging(options =>
-    {
-        options.AddSimpleConsole(c =>
-        {
-            c.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
-            c.UseUtcTimestamp = true;
-        });
-    });
+            {
+                options.AddSimpleConsole(c =>
+                {
+                    c.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
+                    c.UseUtcTimestamp = true;
+                });
+            });
 
 
         }
@@ -80,13 +53,9 @@ namespace NetworkMonitor
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime applicationLifetime)
         {
-          
 
-            app.UseCors("AllowAnyOrigin");
+
             app.UseRouting();
-            app.UseStaticFiles();
-            app.UseAuthentication();
-            app.UseAuthorization();
             app.UseCloudEvents();
             app.UseEndpoints(endpoints =>
             {
