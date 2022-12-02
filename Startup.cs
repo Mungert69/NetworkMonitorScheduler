@@ -7,10 +7,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetworkMonitor.Auth;
-using NetworkMonitor.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace NetworkMonitor
 {
@@ -65,6 +65,15 @@ namespace NetworkMonitor
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );*/
             services.AddControllers().AddDapr();
+            services.AddLogging(options =>
+    {
+        options.AddSimpleConsole(c =>
+        {
+            c.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
+            c.UseUtcTimestamp = true;
+        });
+    });
+
 
         }
 
