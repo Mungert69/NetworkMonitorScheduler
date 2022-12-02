@@ -45,8 +45,6 @@ namespace NetworkMonitorScheduler
                     {
                         _logger.LogWarning("AlertService has not signalled it is ready");
                     }
-
-                    _logger.LogInformation("Sent monitorAlert event.");
                 }
                 else
                 {
