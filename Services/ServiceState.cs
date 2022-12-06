@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 
-namespace NetworkMonitorScheduler.Services
+namespace NetworkMonitor.Scheduler.Services
 {
     public class ProcessorInstance
     {
