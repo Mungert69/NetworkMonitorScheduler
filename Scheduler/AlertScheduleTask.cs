@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Dapr.Client;
-using NetworkMonitorScheduler.Services;
+using NetworkMonitor.Scheduler.Services;
 
-namespace NetworkMonitorScheduler
+namespace NetworkMonitor.Scheduler
 {
     public class AlertScheduleTask : ScheduledProcessor
     {

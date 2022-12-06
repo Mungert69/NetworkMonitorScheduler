@@ -1,6 +1,6 @@
 ﻿
 using Microsoft.Extensions.DependencyInjection;
-using NetworkMonitorScheduler.Services;
+using NetworkMonitor.Scheduler.Services;
 using NetworkMonitor.Objects.ServiceMessage;
 using System;
 using System.Net.Http;
@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Dapr.Client;
 
-namespace NetworkMonitorScheduler
+namespace NetworkMonitor.Scheduler
 {
     public class PingScheduleTask : ScheduledProcessor
     {

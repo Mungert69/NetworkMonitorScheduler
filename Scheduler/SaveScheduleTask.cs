@@ -2,14 +2,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
-using NetworkMonitorScheduler.Services;
+using NetworkMonitor.Scheduler.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Dapr.Client;
 
 
-namespace NetworkMonitorScheduler
+namespace NetworkMonitor.Scheduler
 {
     public class SaveScheduleTask : ScheduledProcessor
     {

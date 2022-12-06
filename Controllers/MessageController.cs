@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NetworkMonitor.Objects;
 using NetworkMonitor.Objects.ServiceMessage;
-using NetworkMonitorScheduler.Services;
+using NetworkMonitor.Scheduler.Services;
 using System;
 using System.Collections.Generic;
 using NetworkMonitor.Utils;
@@ -10,7 +10,7 @@ using System.Linq;
 
 using Dapr;
 
-namespace NetworkMonitorScheduler.Controllers
+namespace NetworkMonitor.Scheduler.Controllers
 {
     [ApiController]
     [Route("[controller]")]

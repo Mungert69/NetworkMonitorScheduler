@@ -1,5 +1,5 @@
-using NetworkMonitorScheduler;
-using NetworkMonitorScheduler.Services;
+using NetworkMonitor.Scheduler;
+using NetworkMonitor.Scheduler.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
