@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using NetworkMonitor.Scheduler.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -39,7 +40,11 @@ namespace NetworkMonitor.Scheduler
                     _logger.LogInformation("Dapr Client Status is healthy");
                     if (serviceState.IsMonitorServiceReady)
                     {
-                        _daprClient.PublishEventAsync("pubsub", "monitorSaveData");
+                        var daprMetadata=new Dictionary<string,string>();
+                        // ttl 6h mins 100s.
+                        daprMetadata.Add("ttlInSeconds","21500");
+
+                        _daprClient.PublishEventAsync("pubsub", "monitorSaveData",daprMetadata);
                         _logger.LogInformation("Sent monitorSaveData event.");
                         serviceState.IsMonitorServiceReady = false;
                     }
