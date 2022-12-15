@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using Dapr.Client;
 
 namespace NetworkMonitor.Scheduler
@@ -44,14 +45,17 @@ namespace NetworkMonitor.Scheduler
 
                         if (procInst.IsReady)
                         {
-                            _daprClient.PublishEventAsync<ProcessorConnectObj>("pubsub", "processorConnect" + procInst.ID, connectObj);
-                            _logger.LogInformation("Sent processorConnect event for appID "+procInst.ID);
+                            var daprMetadata = new Dictionary<string, string>();
+                            daprMetadata.Add("ttlInSeconds", "60");
+
+                            _daprClient.PublishEventAsync<ProcessorConnectObj>("pubsub", "processorConnect" + procInst.ID, connectObj,daprMetadata);
+                            _logger.LogInformation("Sent processorConnect event for appID " + procInst.ID);
                             procInst.IsReady = false;
 
                         }
                         else
                         {
-                            _logger.LogWarning("Processor "+procInst.ID+" has not signalled it is ready");
+                            _logger.LogWarning("Processor " + procInst.ID + " has not signalled it is ready");
                         }
                     }
                 }
