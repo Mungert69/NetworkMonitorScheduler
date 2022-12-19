@@ -36,13 +36,15 @@ namespace NetworkMonitor.Scheduler.Controllers
 
             try
             {
-                _serviceState.ProcessorInstances.Where(w => w.ID==processorObj.AppID).First().IsReady = processorObj.IsProcessorReady;
-                result.Message += "Success set ProcessorrReady for AppID "+processorObj.AppID+" to " + processorObj.IsProcessorReady;
-                result.Success = true;
+                var procInst=new ProcessorInstance();
+                procInst.ID=processorObj.AppID;
+                procInst.IsReady=processorObj.IsProcessorReady;
+                result=_serviceState.SetProcessorReady( procInst);
                 _logger.LogInformation(result.Message);
             }
             catch (Exception e)
             {
+                // At the moment this exception is redundent as expection is caught inside SetProcessorReady.
                 result.Data = null;
                 result.Success = false;
                 result.Message += "Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ";
