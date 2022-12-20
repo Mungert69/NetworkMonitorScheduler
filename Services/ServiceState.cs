@@ -19,6 +19,7 @@ namespace NetworkMonitor.Scheduler.Services
         List<ProcessorInstance> ProcessorInstances { get; }
 
         ResultObj SetProcessorReady(ProcessorInstance procInst);
+        ResultObj CheckHealth();
     }
 
     public class ServiceState : IServiceState
@@ -85,6 +86,39 @@ namespace NetworkMonitor.Scheduler.Services
                 _processorStateChanges.Add(procInst.ID, new List<DateTime>());
 
             }
+        }
+
+        public ResultObj CheckHealth(){
+
+            var result=new ResultObj();
+            result.Success=true;
+
+            if (_monitorServiceStateChanges.LastOrDefault()<DateTime.UtcNow.AddHours(-6)){
+                //alert MonitorService not changing state
+                result.Success=false;
+                var timeSpan=DateTime.UtcNow-_monitorServiceStateChanges.LastOrDefault();
+
+                result.Message+="Failed : MonitorSerivce has not changed state for "+timeSpan.TotalMinutes;
+            }
+             if (_alertServiceStateChanges.LastOrDefault()<DateTime.UtcNow.AddMinutes(-2)){
+                //alert MonitorService not changing state
+                result.Success=false;
+                var timeSpan=DateTime.UtcNow-_alertServiceStateChanges.LastOrDefault();
+
+                result.Message+="Failed : AlertSerivce has not changed state for "+timeSpan.TotalMinutes;
+            }
+
+            foreach (var procInst in _processorInstances){
+                  if (_processorStateChanges[procInst.ID].LastOrDefault()<DateTime.UtcNow.AddMinutes(-2)){
+                //alert MonitorService not changing state
+                result.Success=false;
+                var timeSpan=DateTime.UtcNow-_processorStateChanges[procInst.ID].LastOrDefault();
+
+                result.Message+="Failed : Processor with AppID "+procInst.ID+" has not changed state for "+timeSpan.TotalMinutes;
+            }
+            }
+
+            return result;
         }
 
     }

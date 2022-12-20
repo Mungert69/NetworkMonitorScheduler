@@ -68,7 +68,7 @@ namespace NetworkMonitor.Scheduler
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in PingScheduleTask.ProcesInScope() : Error Was : " + e.Message + " Inner Exceptoin : " + e.InnerException.Message);
+                _logger.LogError("Error : occured in PingScheduleTask.ProcesInScope() : Error Was : "  + e.Message.ToString());
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;
