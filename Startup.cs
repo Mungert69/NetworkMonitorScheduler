@@ -33,6 +33,7 @@ namespace NetworkMonitor
             services.AddSingleton<IHostedService, SaveScheduleTask>();
             services.AddSingleton<IHostedService, AlertScheduleTask>();
             services.AddSingleton<IHostedService, PingScheduleTask>();
+            services.AddSingleton<IHostedService, HealthCheckScheduleTask>();
             services.AddSingleton<IServiceState, ServiceState>();
 
             services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));

@@ -57,7 +57,7 @@ namespace NetworkMonitor.Scheduler
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in AlertScheduleTask.ProcesInScope() : " + e.Message + " Inner Exception : " + e.InnerException.Message);
+                _logger.LogError("Error : occured in AlertScheduleTask.ProcesInScope() . Error was : " + e.Message.ToString());
             }
 
             return Task.CompletedTask;
