@@ -61,7 +61,7 @@ namespace NetworkMonitor.Scheduler
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in SaveScheduleTask.ProcesInScope() : Error Was : " + e.Message + " Inner Exceptoin : " + e.InnerException.Message);
+                _logger.LogError("Error : occured in SaveScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
 
             }
             Console.WriteLine("ScheduleService : Saving data processing ends here");
