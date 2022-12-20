@@ -98,14 +98,14 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Success=false;
                 var timeSpan=DateTime.UtcNow-_monitorServiceStateChanges.LastOrDefault();
 
-                result.Message+="Failed : MonitorSerivce has not changed state for "+timeSpan.TotalMinutes;
+                result.Message+="Failed : MonitorSerivce has not changed state for "+timeSpan.TotalHours+" h ";
             }
              if (_alertServiceStateChanges.LastOrDefault()<DateTime.UtcNow.AddMinutes(-2)){
                 //alert MonitorService not changing state
                 result.Success=false;
                 var timeSpan=DateTime.UtcNow-_alertServiceStateChanges.LastOrDefault();
 
-                result.Message+="Failed : AlertSerivce has not changed state for "+timeSpan.TotalMinutes;
+                result.Message+="Failed : AlertSerivce has not changed state for "+timeSpan.TotalMinutes+ " m ";
             }
 
             foreach (var procInst in _processorInstances){
@@ -114,7 +114,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Success=false;
                 var timeSpan=DateTime.UtcNow-_processorStateChanges[procInst.ID].LastOrDefault();
 
-                result.Message+="Failed : Processor with AppID "+procInst.ID+" has not changed state for "+timeSpan.TotalMinutes;
+                result.Message+="Failed : Processor with AppID "+procInst.ID+" has not changed state for "+timeSpan.TotalMinutes+ " m ";
             }
             }
 
