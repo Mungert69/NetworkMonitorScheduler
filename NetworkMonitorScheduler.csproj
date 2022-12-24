@@ -41,6 +41,7 @@
     <PackageReference Include="SharpPcap" Version="6.2.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.23.1" />
                     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+                     <PackageReference Include="MailKit" Version="3.4.1" />
    </ItemGroup>
 
 
