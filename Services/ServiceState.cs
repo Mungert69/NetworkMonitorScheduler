@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using NetworkMonitor.Objects;
+using MailKit.Net.Smtp;
+using Microsoft.Extensions.Logging;
+using MimeKit;
+using NetworkMonitor.Utils.Helpers;
 
 namespace NetworkMonitor.Scheduler.Services
 {
@@ -32,6 +36,27 @@ namespace NetworkMonitor.Scheduler.Services
         private bool _isAlertServiceReady = true;
         private bool _isMonitorServiceReady = true;
         private IConfiguration _config;
+        private ILogger<ServiceState> _logger;
+
+        private SystemParams _systemParams;
+
+         public ServiceState(ILogger<ServiceState> logger,IConfiguration config)
+        {
+            _config = config;
+            _logger=logger;
+            _systemParams= SystemParamsHelper.getSystemParams(_config, _logger);
+            List<string> processorList = new List<string>();
+            _config.GetSection("ProcessorList").Bind(processorList);
+            foreach (string appID in processorList)
+            {
+                ProcessorInstance procInst = new ProcessorInstance();
+                procInst.ID = appID;
+                _processorInstances.Add(procInst);
+                _processorStateChanges.Add(procInst.ID, new List<DateTime>());
+
+            }
+        }
+
         public bool IsAlertServiceReady
         {
             get => _isAlertServiceReady; set
@@ -73,20 +98,86 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
-        public ServiceState(IConfiguration config)
-        {
-            _config = config;
-            List<string> processorList = new List<string>();
-            _config.GetSection("ProcessorList").Bind(processorList);
-            foreach (string appID in processorList)
-            {
-                ProcessorInstance procInst = new ProcessorInstance();
-                procInst.ID = appID;
-                _processorInstances.Add(procInst);
-                _processorStateChanges.Add(procInst.ID, new List<DateTime>());
+       
+    public ResultObj SendHealthReport(string reportMessage)
 
+        {
+            ResultObj result = new ResultObj();
+
+           
+
+          
+
+           var alertMessage=new AlertMessage();
+            alertMessage.Message += "\n\nThis message was sent by the messenger running at " + _systemParams.ThisSystemUrl.ExternalUrl + " (" + _systemParams.PublicIPAddress.ToString() +" Health Report message : "+reportMessage;
+
+            string emailFrom = _systemParams.SystemEmail;
+            string systemPassword = _systemParams.SystemPassword;
+            string systemUser = _systemParams.SystemUser;
+            int mailServerPort = _systemParams.MailServerPort;
+            bool mailServerUseSSL = _systemParams.MailServerUseSSL;
+            string mailServer=_systemParams.MailServer;
+
+            var userInfo=new UserInfo();
+            userInfo.Email=emailFrom;
+            userInfo.Email_verified=true;
+            userInfo.Name="System Admin";
+
+            alertMessage.UserInfo=userInfo;
+            alertMessage.Subject="Servive Health Report";
+
+            try
+            {
+                MimeMessage message = new MimeMessage();
+                MailboxAddress from = new MailboxAddress("FreeNetworkMonitor Health Monitor",
+                emailFrom);
+                message.From.Add(from);
+
+
+                MailboxAddress to = new MailboxAddress(alertMessage.Name,
+                alertMessage.EmailTo);
+                message.To.Add(to);
+
+                //message.Subject = "Network Monitor Alert : Host Down";
+                message.Subject = alertMessage.Subject;
+                BodyBuilder bodyBuilder = new BodyBuilder();
+
+                bodyBuilder.TextBody = alertMessage.Message;
+                //bodyBuilder.Attachments.Add(_env.WebRootPath + "\\file.png");
+                message.Body = bodyBuilder.ToMessageBody();
+
+
+                SmtpClient client = new SmtpClient();
+                client.ServerCertificateValidationCallback = (mysender, certificate, chain, sslPolicyErrors) => { return true; };
+                client.CheckCertificateRevocation = false;
+                if (mailServerUseSSL)
+                {
+                    client.Connect(mailServer, mailServerPort, true);
+                }
+                else
+                {
+                    client.Connect(mailServer, mailServerPort, MailKit.Security.SecureSocketOptions.StartTls);
+                }
+                client.Authenticate(systemUser, systemPassword);
+
+                client.Send(message);
+                client.Disconnect(true);
+                client.Dispose();
+                result.Message = "Email with subject " + alertMessage.Subject + " sent ok";
+                result.Success = true;
+                _logger.LogInformation(result.Message);
             }
+            catch (Exception e)
+            {
+                result.Message = "Email with subject " + alertMessage.Subject + " failed to send . Error was :" + e.Message.ToString();
+                result.Success = false;
+                _logger.LogError(result.Message);
+            }
+            return result;
+
         }
+
+      
 
         public ResultObj CheckHealth(){
 
