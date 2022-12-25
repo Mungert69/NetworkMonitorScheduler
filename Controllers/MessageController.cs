@@ -54,6 +54,32 @@ namespace NetworkMonitor.Scheduler.Controllers
 
         }
 
+        [HttpGet("ResetReportSent")]
+        public ActionResult<ResultObj> ResetReportSent()
+        {
+            ResultObj result = new ResultObj();
+            result.Success = false;
+            result.Message = "MessageAPI : ResetReportSent : ";
+
+            try
+            {
+               
+                result=_serviceState.ResetReportSent();
+                _logger.LogInformation(result.Message);
+            }
+            catch (Exception e)
+            {
+                // At the moment this exception is redundent as expection is caught inside SetProcessorReady.
+                result.Data = null;
+                result.Success = false;
+                result.Message += "Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ";
+                _logger.LogError("Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ");
+            }
+            return result;
+
+        }
+
+
         [Topic("pubsub", "alertServiceReady")]
         [HttpPost("alertServiceReady")]
         [Consumes("application/json")]

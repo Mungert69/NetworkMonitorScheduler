@@ -14,7 +14,7 @@ namespace NetworkMonitor.Scheduler
 {
     public class HealthCheckScheduleTask : ScheduledProcessor
     {
-        private bool firstRun;
+        private bool _firstRun;
         private ILogger _logger;
         private DaprClient _daprClient;
 
@@ -22,30 +22,43 @@ namespace NetworkMonitor.Scheduler
         {
             _daprClient = daprClient;
             _logger = logger;
+            _firstRun=true;
             string scheduleStr = config.GetValue<string>("PingSchedule");
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
             _logger.LogInformation("SCHEDULE : Starting Health Check schedule ");
+            if (_firstRun) {
+                _firstRun=false;
+                return Task.CompletedTask;}
             IServiceState serviceState = serviceProvider.GetService<IServiceState>();
 
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
-              
-                var result=serviceState.CheckHealth();
-                if (!result.Success )
+
+                var result = serviceState.CheckHealth();
+                if (!result.Success)
                 {
-                   
-                      _logger.LogCritical("Error : Schedule State failed Health Check Message was : "+result.Message);
-                   
-                    
+
+                    _logger.LogCritical("Error : Schedule State failed Health Check Message was : " + result.Message);
+                    var resultSend = serviceState.SendHealthReport(result.Message);
+                    if (resultSend.Success)
+                    {
+                        _logger.LogInformation(resultSend.Message);
+                    }
+                    else
+                    {
+                        _logger.LogError("Error : Sending Health Report. Error was : " + resultSend.Message);
+                    }
+
                 }
-                else{
+                else
+                {
                     _logger.LogInformation("Success :: --> All Services Healthy <-- ::");
                 }
-               
+
 
 
             }
