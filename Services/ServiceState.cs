@@ -8,12 +8,14 @@ using Microsoft.Extensions.Logging;
 using MimeKit;
 using NetworkMonitor.Utils.Helpers;
 
+
 namespace NetworkMonitor.Scheduler.Services
 {
     public class ProcessorInstance
     {
         public string ID;
         public bool IsReady = true;
+        public bool IsReportSent=false;
     }
     public interface IServiceState
     {
@@ -24,6 +26,10 @@ namespace NetworkMonitor.Scheduler.Services
 
         ResultObj SetProcessorReady(ProcessorInstance procInst);
         ResultObj CheckHealth();
+
+        ResultObj SendHealthReport(string reportMessage);
+
+        ResultObj ResetReportSent();
     }
 
     public class ServiceState : IServiceState
@@ -35,26 +41,44 @@ namespace NetworkMonitor.Scheduler.Services
         private List<DateTime> _alertServiceStateChanges = new List<DateTime>();
         private bool _isAlertServiceReady = true;
         private bool _isMonitorServiceReady = true;
+        private bool _isMonitorServiceReportSent = false;
+        private bool _isAlertServiceReportSent = false;
+
         private IConfiguration _config;
         private ILogger<ServiceState> _logger;
 
         private SystemParams _systemParams;
 
-         public ServiceState(ILogger<ServiceState> logger,IConfiguration config)
+        public ServiceState(ILogger<ServiceState> logger, IConfiguration config)
         {
             _config = config;
-            _logger=logger;
-            _systemParams= SystemParamsHelper.getSystemParams(_config, _logger);
+            _logger = logger;
+            _systemParams = SystemParamsHelper.getSystemParams(_config, _logger);
             List<string> processorList = new List<string>();
             _config.GetSection("ProcessorList").Bind(processorList);
             foreach (string appID in processorList)
             {
                 ProcessorInstance procInst = new ProcessorInstance();
                 procInst.ID = appID;
+                procInst.IsReportSent=false;
                 _processorInstances.Add(procInst);
                 _processorStateChanges.Add(procInst.ID, new List<DateTime>());
+                
 
             }
+        }
+
+        public ResultObj ResetReportSent()
+        {
+            _isAlertServiceReportSent = false;
+            _isMonitorServiceReportSent = false;
+            _processorInstances.ForEach( f => {
+                f.IsReportSent=false;
+            });
+            var result = new ResultObj();
+            result.Success = true;
+            result.Message="Success : Reset Report Sent flags.";
+            return result;
         }
 
         public bool IsAlertServiceReady
@@ -87,7 +111,7 @@ namespace NetworkMonitor.Scheduler.Services
                 _processorInstances.FirstOrDefault(f => f.ID == procInst.ID).IsReady = procInst.IsReady;
                 _processorStateChanges[procInst.ID].Add(DateTime.UtcNow);
                 result.Success = true;
-                result.Message = "Success : Set Processor Ready for AppID "+procInst.ID+" to " + procInst.IsReady;
+                result.Message = "Success : Set Processor Ready for AppID " + procInst.ID + " to " + procInst.IsReady;
             }
             catch (Exception e)
             {
@@ -98,33 +122,28 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
-       
-    public ResultObj SendHealthReport(string reportMessage)
+
+        public ResultObj SendHealthReport(string reportMessage)
 
         {
             ResultObj result = new ResultObj();
-
-           
-
-          
-
-           var alertMessage=new AlertMessage();
-            alertMessage.Message += "\n\nThis message was sent by the messenger running at " + _systemParams.ThisSystemUrl.ExternalUrl + " (" + _systemParams.PublicIPAddress.ToString() +" Health Report message : "+reportMessage;
+            var alertMessage = new AlertMessage();
+            alertMessage.Message += "\n\nThis message was sent by the messenger running at " + _systemParams.ThisSystemUrl.ExternalUrl + " (" + _systemParams.PublicIPAddress.ToString() + " Health Report message : " + reportMessage;
 
             string emailFrom = _systemParams.SystemEmail;
             string systemPassword = _systemParams.SystemPassword;
             string systemUser = _systemParams.SystemUser;
             int mailServerPort = _systemParams.MailServerPort;
             bool mailServerUseSSL = _systemParams.MailServerUseSSL;
-            string mailServer=_systemParams.MailServer;
+            string mailServer = _systemParams.MailServer;
 
-            var userInfo=new UserInfo();
-            userInfo.Email=emailFrom;
-            userInfo.Email_verified=true;
-            userInfo.Name="System Admin";
+            var userInfo = new UserInfo();
+            userInfo.Email = emailFrom;
+            userInfo.Email_verified = true;
+            userInfo.Name = "System Admin";
 
-            alertMessage.UserInfo=userInfo;
-            alertMessage.Subject="Servive Health Report";
+            alertMessage.UserInfo = userInfo;
+            alertMessage.Subject = "Servive Health Report";
 
             try
             {
@@ -177,36 +196,41 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
-      
 
-        public ResultObj CheckHealth(){
 
-            var result=new ResultObj();
-            result.Success=true;
+        public ResultObj CheckHealth()
+        {
 
-            if (_monitorServiceStateChanges.LastOrDefault()<DateTime.UtcNow.AddHours(-6)){
+            var result = new ResultObj();
+            result.Success = true;
+
+            if (_monitorServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddHours(-6) && !_isMonitorServiceReportSent)
+            {
                 //alert MonitorService not changing state
-                result.Success=false;
-                var timeSpan=DateTime.UtcNow-_monitorServiceStateChanges.LastOrDefault();
-
-                result.Message+="Failed : MonitorSerivce has not changed state for "+timeSpan.TotalHours+" h ";
+                result.Success = false;
+                var timeSpan = DateTime.UtcNow - _monitorServiceStateChanges.LastOrDefault();
+                result.Message += "Failed : MonitorSerivce has not changed state for " + timeSpan.TotalHours + " h ";
+                _isMonitorServiceReportSent=true;
             }
-             if (_alertServiceStateChanges.LastOrDefault()<DateTime.UtcNow.AddMinutes(-2)){
+            if (_alertServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-2) && !_isAlertServiceReportSent)
+            {
                 //alert MonitorService not changing state
-                result.Success=false;
-                var timeSpan=DateTime.UtcNow-_alertServiceStateChanges.LastOrDefault();
-
-                result.Message+="Failed : AlertSerivce has not changed state for "+timeSpan.TotalMinutes+ " m ";
+                result.Success = false;
+                var timeSpan = DateTime.UtcNow - _alertServiceStateChanges.LastOrDefault();
+                result.Message += "Failed : AlertSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
+                _isAlertServiceReportSent=true;
             }
 
-            foreach (var procInst in _processorInstances){
-                  if (_processorStateChanges[procInst.ID].LastOrDefault()<DateTime.UtcNow.AddMinutes(-2)){
-                //alert MonitorService not changing state
-                result.Success=false;
-                var timeSpan=DateTime.UtcNow-_processorStateChanges[procInst.ID].LastOrDefault();
-
-                result.Message+="Failed : Processor with AppID "+procInst.ID+" has not changed state for "+timeSpan.TotalMinutes+ " m ";
-            }
+            foreach (var procInst in _processorInstances)
+            {
+                if (_processorStateChanges[procInst.ID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-2) && !procInst.IsReportSent)
+                {
+                    //alert MonitorService not changing state
+                    result.Success = false;
+                    var timeSpan = DateTime.UtcNow - _processorStateChanges[procInst.ID].LastOrDefault();
+                    result.Message += "Failed : Processor with AppID " + procInst.ID + " has not changed state for " + timeSpan.TotalMinutes + " m ";
+                    procInst.IsReportSent=true;
+                }
             }
 
             return result;
