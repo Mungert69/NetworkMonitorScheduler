@@ -40,21 +40,22 @@ namespace NetworkMonitor.Scheduler
                     _logger.LogInformation("Dapr Client Status is healthy");
                     ProcessorConnectObj connectObj = new ProcessorConnectObj();
                     connectObj.NextRunInterval = RunScheduleInterval();
+                    var daprMetadata = new Dictionary<string, string>();
+                    daprMetadata.Add("ttlInSeconds", "60");
+
                     foreach (ProcessorInstance procInst in serviceState.ProcessorInstances)
                     {
-
                         if (procInst.IsReady)
                         {
-                            var daprMetadata = new Dictionary<string, string>();
-                            daprMetadata.Add("ttlInSeconds", "60");
 
-                            _daprClient.PublishEventAsync<ProcessorConnectObj>("pubsub", "processorConnect" + procInst.ID, connectObj,daprMetadata);
+                            _daprClient.PublishEventAsync<ProcessorConnectObj>("pubsub", "processorConnect" + procInst.ID, connectObj, daprMetadata);
                             _logger.LogInformation("Sent processorConnect event for appID " + procInst.ID);
                             procInst.IsReady = false;
 
                         }
                         else
                         {
+                            _daprClient.PublishEventAsync("pubsub", "processorWakeUp" + procInst.ID, daprMetadata);
                             _logger.LogWarning("Processor " + procInst.ID + " has not signalled it is ready");
                         }
                     }
@@ -68,7 +69,7 @@ namespace NetworkMonitor.Scheduler
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in PingScheduleTask.ProcesInScope() : Error Was : "  + e.Message.ToString());
+                _logger.LogError("Error : occured in PingScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;
