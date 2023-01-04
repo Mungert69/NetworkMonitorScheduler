@@ -33,20 +33,23 @@ namespace NetworkMonitor.Scheduler
             try
             {
                 bool isDaprReady = _daprClient.CheckHealthAsync().Result;
+                var daprMetadata = new Dictionary<string, string>();
+                daprMetadata.Add("ttlInSeconds", "60");
                 if (isDaprReady)
                 {
                     _logger.LogInformation("Dapr Client Status is healthy");
                     if (serviceState.IsAlertServiceReady)
                     {
-                         var daprMetadata=new Dictionary<string,string>();
-                        daprMetadata.Add("ttlInSeconds","60");
 
-                        _daprClient.PublishEventAsync("pubsub", "monitorAlert",daprMetadata);
+
+                        _daprClient.PublishEventAsync("pubsub", "monitorAlert", daprMetadata);
                         _logger.LogInformation("Sent monitorAlert event.");
                         serviceState.IsAlertServiceReady = false;
                     }
                     else
                     {
+                        _daprClient.PublishEventAsync("pubsub", "serviceWakeUp", daprMetadata);
+
                         _logger.LogWarning("AlertService has not signalled it is ready");
                     }
                 }
