@@ -2,14 +2,13 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: rabbitmq-pubsub
+  name: pubsub
   namespace: default
 spec:
-  type: pubsub.rabbitmq
-  version: v1
-  metadata:
-  - name: host
-    value: rabbitmq:5672
-  - name: maxLen
-    value: 5
-
+ type: pubsub.rabbitmq
+ version: v1
+ metadata:
+ - name: host
+   value: "amqp://guest:guest@localhost:5672"
+ - name: durable
+   value: true
