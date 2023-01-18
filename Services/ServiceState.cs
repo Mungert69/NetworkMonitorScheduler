@@ -63,7 +63,7 @@ namespace NetworkMonitor.Scheduler.Services
                 procInst.IsReportSent=false;
                 _processorInstances.Add(procInst);
                 _processorStateChanges.Add(procInst.ID, new List<DateTime>());
-                
+                _logger.LogInformation(" Success : added Processor AppID "+appID);
 
             }
         }
