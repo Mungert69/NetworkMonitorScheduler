@@ -54,16 +54,16 @@ namespace NetworkMonitor.Scheduler.Services
             _config = config;
             _logger = logger;
             _systemParams = SystemParamsHelper.getSystemParams(_config, _logger);
-            List<string> processorList = new List<string>();
+            List<ProcessorObj> processorList = new List<ProcessorObj>();
             _config.GetSection("ProcessorList").Bind(processorList);
-            foreach (string appID in processorList)
+            foreach ( var processorObj in processorList)
             {
                 ProcessorInstance procInst = new ProcessorInstance();
-                procInst.ID = appID;
+                procInst.ID = processorObj.AppID;
                 procInst.IsReportSent=false;
                 _processorInstances.Add(procInst);
                 _processorStateChanges.Add(procInst.ID, new List<DateTime>());
-                _logger.LogInformation(" Success : added Processor AppID "+appID);
+                _logger.LogInformation(" Success : added Processor AppID "+processorObj.AppID);
 
             }
         }
