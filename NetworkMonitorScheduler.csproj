@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp7.0</TargetFramework>
-    <UserSecretsId>0de60d59-203b-45b8-857e-71ba0fb8045d</UserSecretsId>
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
     <PublishProfile>DefaultContainer</PublishProfile>
     <ContainerBaseImage>mcr.microsoft.com/dotnet/nightly/aspnet:7.0-jammy-chiseled</ContainerBaseImage>
     <ContainerImageName>mungert/networkmonitorscheduler</ContainerImageName>
     <ContainerImageTag>0.0.9</ContainerImageTag>
+    <PublishTrimmed>true</PublishTrimmed>
 
 </PropertyGroup>
 
