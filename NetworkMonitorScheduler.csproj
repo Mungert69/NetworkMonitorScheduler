@@ -19,7 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
- 
+  <PackageReference Include="CloudNative.CloudEvents" Version="2.5.1" />
+    <PackageReference Include="CloudNative.CloudEvents.AspNetCore" Version="2.5.1" />
+    <PackageReference Include="CloudNative.CloudEvents.NewtonsoftJson" Version="2.5.1" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
     <PackageReference Include="Auth0.AuthenticationApi" Version="7.17.3" />
     <PackageReference Include="Auth0.ManagementApi" Version="7.17.3" />
     <PackageReference Include="csvhelper" Version="29.0.0" />
