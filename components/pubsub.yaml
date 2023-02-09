@@ -9,6 +9,6 @@ spec:
  version: v1
  metadata:
  - name: host
-   value: "amqp://guest:guest@rabbitmq:5672"
+   value: "amqp://usercommonxf1:test12@rabbitmq:5672/%2fvhostuser"
  - name: durable
    value: true
