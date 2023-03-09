@@ -25,7 +25,7 @@
     <PackageReference Include="Auth0.AuthenticationApi" Version="7.17.3" />
     <PackageReference Include="Auth0.ManagementApi" Version="7.17.3" />
     <PackageReference Include="csvhelper" Version="29.0.0" />
-    <PackageReference Include="Dapr.AspNetCore" Version="1.9.0" />
+    <PackageReference Include="Dapr.AspNetCore" Version="1.10.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.0" />
