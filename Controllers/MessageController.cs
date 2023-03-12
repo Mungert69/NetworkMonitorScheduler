@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using MetroLog;
 using NetworkMonitor.Objects;
 using NetworkMonitor.Objects.ServiceMessage;
 using NetworkMonitor.Scheduler.Services;
@@ -40,7 +40,7 @@ namespace NetworkMonitor.Scheduler.Controllers
                 procInst.ID=processorObj.AppID;
                 procInst.IsReady=processorObj.IsProcessorReady;
                 result=_serviceState.SetProcessorReady( procInst);
-                _logger.LogInformation(result.Message);
+                _logger.Info(result.Message);
             }
             catch (Exception e)
             {
@@ -48,7 +48,7 @@ namespace NetworkMonitor.Scheduler.Controllers
                 result.Data = null;
                 result.Success = false;
                 result.Message += "Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ";
-                _logger.LogError("Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ");
+                _logger.Error("Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ");
             }
             return result;
 
@@ -65,7 +65,7 @@ namespace NetworkMonitor.Scheduler.Controllers
             {
                
                 result=_serviceState.ResetReportSent();
-                _logger.LogInformation(result.Message);
+                _logger.Info(result.Message);
             }
             catch (Exception e)
             {
@@ -73,7 +73,7 @@ namespace NetworkMonitor.Scheduler.Controllers
                 result.Data = null;
                 result.Success = false;
                 result.Message += "Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ";
-                _logger.LogError("Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ");
+                _logger.Error("Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ");
             }
             return result;
 
@@ -94,14 +94,14 @@ namespace NetworkMonitor.Scheduler.Controllers
                 _serviceState.IsAlertServiceReady = alertObj.IsAlertServiceReady;
                 result.Message += "Success set AlertServiceReady to " + alertObj.IsAlertServiceReady;
                 result.Success = true;
-                _logger.LogInformation(result.Message);
+                _logger.Info(result.Message);
             }
             catch (Exception e)
             {
                 result.Data = null;
                 result.Success = false;
                 result.Message += "Error : Failed to set AlertServiceReady : Error was : " + e.Message + " ";
-                _logger.LogError("Error : Failed to set AlertServiceReady : Error was : " + e.Message + " ");
+                _logger.Error("Error : Failed to set AlertServiceReady : Error was : " + e.Message + " ");
             }
             return result;
 
@@ -121,14 +121,14 @@ namespace NetworkMonitor.Scheduler.Controllers
                 _serviceState.IsMonitorServiceReady = monitorObj.IsServiceReady;
                 result.Message += "Success set MonitorServiceReady to " + monitorObj.IsServiceReady;
                 result.Success = true;
-                _logger.LogInformation(result.Message);
+                _logger.Info(result.Message);
             }
             catch (Exception e)
             {
                 result.Data = null;
                 result.Success = false;
                 result.Message += "Error : Failed to set MonitorServiceReady : Error was : " + e.Message + " ";
-                _logger.LogError("Error : Failed to set MonitorServiceReady : Error was : " + e.Message + " ");
+                _logger.Error("Error : Failed to set MonitorServiceReady : Error was : " + e.Message + " ");
             }
             return result;
 
