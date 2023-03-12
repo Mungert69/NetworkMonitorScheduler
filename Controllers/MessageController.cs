@@ -3,6 +3,7 @@ using MetroLog;
 using NetworkMonitor.Objects;
 using NetworkMonitor.Objects.ServiceMessage;
 using NetworkMonitor.Scheduler.Services;
+using NetworkMonitor.Objects.Factory;
 using System;
 using System.Collections.Generic;
 using NetworkMonitor.Utils;
@@ -16,12 +17,12 @@ namespace NetworkMonitor.Scheduler.Controllers
     [Route("[controller]")]
     public class MessageController : ControllerBase
     {
-        private readonly ILogger<MessageController> _logger;
+        private readonly ILogger _logger;
         private IServiceState _serviceState;
 
-        public MessageController(ILogger<MessageController> logger, IServiceState serviceState)
+        public MessageController(INetLoggerFactory loggerFactory, IServiceState serviceState)
         {
-            _logger = logger;
+            _logger = loggerFactory.GetLogger("MessageController");
             _serviceState=serviceState;
           
         }
