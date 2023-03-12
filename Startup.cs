@@ -1,5 +1,6 @@
 using NetworkMonitor.Scheduler;
 using NetworkMonitor.Scheduler.Services;
+using NetworkMonitor.Objects.Factory;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,7 @@ using NetworkMonitor.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using System;
-using Microsoft.Extensions.Logging;
+using MetroLog;
 
 namespace NetworkMonitor
 {
@@ -39,16 +40,8 @@ namespace NetworkMonitor
             services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));
 
             services.AddControllers().AddDapr();
-            services.AddLogging(options =>
-            {
-                options.AddSimpleConsole(c =>
-                {
-                    c.TimestampFormat = "[HH:mm:ss] ";
-                    c.UseUtcTimestamp = true;
-                    c.ColorBehavior=Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
-                    c.SingleLine=true;
-                });
-            });
+            services.AddSingleton<INetLoggerFactory,NetLoggerFactory>();
+
 
 
         }

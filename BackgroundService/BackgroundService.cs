@@ -50,7 +50,7 @@ namespace ASPNETCoreScheduler.BackgroundService
         protected virtual async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             //stoppingToken.Register(() =>
-            //        _logger.LogDebug($" GracePeriod background task is stopping."));
+            //        _logger.Debug($" GracePeriod background task is stopping."));
 
             do
             {

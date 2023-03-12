@@ -4,9 +4,10 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using NetworkMonitor.Objects;
 using MailKit.Net.Smtp;
-using Microsoft.Extensions.Logging;
+using MetroLog;
 using MimeKit;
 using NetworkMonitor.Utils.Helpers;
+using NetworkMonitor.Objects.Factory;
 
 
 namespace NetworkMonitor.Scheduler.Services
@@ -45,14 +46,14 @@ namespace NetworkMonitor.Scheduler.Services
         private bool _isAlertServiceReportSent = false;
 
         private IConfiguration _config;
-        private ILogger<ServiceState> _logger;
+        private ILogger _logger;
 
         private SystemParams _systemParams;
 
-        public ServiceState(ILogger<ServiceState> logger, IConfiguration config)
+        public ServiceState(INetLoggerFactory loggerFactory, IConfiguration config)
         {
             _config = config;
-            _logger = logger;
+            _logger = loggerFactory.GetLogger("ServiceState");
             _systemParams = SystemParamsHelper.getSystemParams(_config, _logger);
             List<ProcessorObj> processorList = new List<ProcessorObj>();
             _config.GetSection("ProcessorList").Bind(processorList);
@@ -63,7 +64,7 @@ namespace NetworkMonitor.Scheduler.Services
                 procInst.IsReportSent=false;
                 _processorInstances.Add(procInst);
                 _processorStateChanges.Add(procInst.ID, new List<DateTime>());
-                _logger.LogInformation(" Success : added Processor AppID "+processorObj.AppID);
+                _logger.Info(" Success : added Processor AppID "+processorObj.AppID);
 
             }
         }
@@ -184,13 +185,13 @@ namespace NetworkMonitor.Scheduler.Services
                 client.Dispose();
                 result.Message = "Email with subject " + alertMessage.Subject + " sent ok";
                 result.Success = true;
-                _logger.LogInformation(result.Message);
+                _logger.Info(result.Message);
             }
             catch (Exception e)
             {
                 result.Message = "Email with subject " + alertMessage.Subject + " failed to send . Error was :" + e.Message.ToString();
                 result.Success = false;
-                _logger.LogError(result.Message);
+                _logger.Error(result.Message);
             }
             return result;
 
