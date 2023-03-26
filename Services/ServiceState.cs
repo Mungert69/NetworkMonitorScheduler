@@ -20,6 +20,7 @@ namespace NetworkMonitor.Scheduler.Services
     {
         bool IsAlertServiceReady { get; set; }
         bool IsPaymentServiceReady { get; set; }
+          bool IsMonitorCheckServiceReady { get; set; }
         bool IsMonitorServiceReady { get; set; }
         List<ProcessorInstance> ProcessorInstances { get; }
         ResultObj SetProcessorReady(ProcessorInstance procInst);
@@ -32,12 +33,15 @@ namespace NetworkMonitor.Scheduler.Services
         private List<ProcessorInstance> _processorInstances = new List<ProcessorInstance>();
         private Dictionary<string, List<DateTime>> _processorStateChanges = new Dictionary<string, List<DateTime>>();
         private List<DateTime> _monitorServiceStateChanges = new List<DateTime>();
+          private List<DateTime> _monitorCheckServiceStateChanges = new List<DateTime>();
         private List<DateTime> _alertServiceStateChanges = new List<DateTime>();
         private List<DateTime> _paymentServiceStateChanges = new List<DateTime>();
         private bool _isAlertServiceReady = true;
         private bool _isPaymentServiceReady = true;
         private bool _isMonitorServiceReady = true;
+         private bool _isMonitorCheckServiceReady = true;
         private bool _isMonitorServiceReportSent = false;
+          private bool _isMonitorCheckServiceReportSent = false;
         private bool _isAlertServiceReportSent = false;
         private bool _isPaymentServiceReportSent = false;
         private IConfiguration _config;
@@ -48,6 +52,11 @@ namespace NetworkMonitor.Scheduler.Services
             _config = config;
             _logger = loggerFactory.GetLogger("ServiceState");
             _systemParams = SystemParamsHelper.getSystemParams(_config, _logger);
+            _alertServiceStateChanges.Add(DateTime.UtcNow);
+            _paymentServiceStateChanges.Add(DateTime.UtcNow);
+            _monitorServiceStateChanges.Add(DateTime.UtcNow);
+             _monitorCheckServiceStateChanges.Add(DateTime.UtcNow);
+
             List<ProcessorObj> processorList = new List<ProcessorObj>();
             _config.GetSection("ProcessorList").Bind(processorList);
             foreach (var processorObj in processorList)
@@ -59,11 +68,17 @@ namespace NetworkMonitor.Scheduler.Services
                 _processorStateChanges.Add(procInst.ID, new List<DateTime>());
                 _logger.Info(" Success : added Processor AppID " + processorObj.AppID);
             }
+            foreach (KeyValuePair<string, List<DateTime>> entry in _processorStateChanges)
+            {
+                entry.Value.Add(DateTime.UtcNow);
+            }
+
         }
         public ResultObj ResetReportSent()
         {
             _isAlertServiceReportSent = false;
             _isMonitorServiceReportSent = false;
+            _isMonitorCheckServiceReportSent=false;
             _isPaymentServiceReady = false;
             _processorInstances.ForEach(f =>
             {
@@ -96,6 +111,14 @@ namespace NetworkMonitor.Scheduler.Services
             {
                 _isMonitorServiceReady = value;
                 _monitorServiceStateChanges.Add(DateTime.UtcNow);
+            }
+        }
+         public bool IsMonitorCheckServiceReady
+        {
+            get => _isMonitorCheckServiceReady; set
+            {
+                _isMonitorCheckServiceReady = value;
+                _monitorCheckServiceStateChanges.Add(DateTime.UtcNow);
             }
         }
         public List<ProcessorInstance> ProcessorInstances
@@ -198,7 +221,15 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += "Failed : AlertSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
                 _isAlertServiceReportSent = true;
             }
-              if (_paymentServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-2) && !_isPaymentServiceReportSent)
+            if (_monitorCheckServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-2) && !_isMonitorCheckServiceReportSent)
+            {
+                //alert MonitorService not changing state
+                result.Success = false;
+                var timeSpan = DateTime.UtcNow - _monitorCheckServiceStateChanges.LastOrDefault();
+                result.Message += "Failed : MonitorCheck has not changed state for " + timeSpan.TotalMinutes + " m ";
+                _isMonitorCheckServiceReportSent = true;
+            }
+            if (_paymentServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-2) && !_isPaymentServiceReportSent)
             {
                 //payment MonitorService not changing state
                 result.Success = false;

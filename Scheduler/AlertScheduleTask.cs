@@ -39,7 +39,7 @@ namespace NetworkMonitor.Scheduler
                 daprMetadata.Add("ttlInSeconds", "60");
                 if (isDaprReady)
                 {
-                    _logger.Info("Dapr Client Status is healthy");
+                    //_logger.Info("Dapr Client Status is healthy");
                     if (serviceState.IsAlertServiceReady)
                     {
 
