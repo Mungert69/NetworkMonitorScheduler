@@ -35,13 +35,14 @@ namespace NetworkMonitor
             services.AddSingleton<IHostedService, AlertScheduleTask>();
             services.AddSingleton<IHostedService, PingScheduleTask>();
             services.AddSingleton<IHostedService, PaymentScheduleTask>();
+            services.AddSingleton<IHostedService, MonitorCheckScheduleTask>();
             services.AddSingleton<IHostedService, HealthCheckScheduleTask>();
             services.AddSingleton<IServiceState, ServiceState>();
 
             services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));
 
             services.AddControllers().AddDapr();
-            services.AddSingleton<INetLoggerFactory,NetLoggerFactory>();
+            services.AddSingleton<INetLoggerFactory, NetLoggerFactory>();
 
 
 
