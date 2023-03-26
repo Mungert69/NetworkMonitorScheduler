@@ -52,7 +52,7 @@ namespace NetworkMonitor.Scheduler
 
                             _daprClient.PublishEventAsync<ProcessorConnectObj>("pubsub", "processorConnect" + procInst.ID, connectObj, daprMetadata);
                             _logger.Info("Sent processorConnect event for appID " + procInst.ID);
-                            //procInst.IsReady = false;
+                            procInst.IsReady = false;
 
                         }
                         else

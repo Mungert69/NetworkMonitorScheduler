@@ -49,7 +49,7 @@ namespace NetworkMonitor.Scheduler
 
                             _daprClient.PublishEventAsync("pubsub", "paymentCheck" , daprMetadata);
                             _logger.Info("Sent paymentCheck event ");
-                            //serviceState.IsPaymentServiceReady = false;
+                            serviceState.IsPaymentServiceReady = false;
 
                         }
                         else
