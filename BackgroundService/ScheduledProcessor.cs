@@ -1,11 +1,10 @@
-﻿using ASPNETCoreScheduler.BackgroundService;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using NCrontab;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetworkMonitor.Scheduler
+namespace NetworkMonitor.BackgroundService
 {
     public abstract class ScheduledProcessor : ScopedProcessor
     {
