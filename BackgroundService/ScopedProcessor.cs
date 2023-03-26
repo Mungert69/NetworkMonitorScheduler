@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace ASPNETCoreScheduler.BackgroundService
+namespace NetworkMonitor.BackgroundService
 {
     public abstract class ScopedProcessor : BackgroundService
     {

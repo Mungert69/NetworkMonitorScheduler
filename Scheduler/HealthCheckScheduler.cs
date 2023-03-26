@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NetworkMonitor.Scheduler.Services;
 using NetworkMonitor.Objects.ServiceMessage;
 using NetworkMonitor.Objects.Factory;
+using NetworkMonitor.BackgroundService;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;

@@ -80,6 +80,34 @@ namespace NetworkMonitor.Scheduler.Controllers
 
         }
 
+ [Topic("pubsub", "paymentServiceReady")]
+        [HttpPost("paymentServiceReady")]
+        [Consumes("application/json")]
+        public ActionResult<ResultObj> PaymentServiceReady([FromBody] PaymentServiceInitObj paymentObj)
+        {
+            ResultObj result = new ResultObj();
+            result.Success = false;
+            result.Message = "MessageAPI : PaymentServiceReady : ";
+
+            try
+            {
+                _serviceState.IsAlertServiceReady = paymentObj.IsPaymentServiceReady;
+                result.Message += "Success set PaymentServiceReady to " + paymentObj.IsPaymentServiceReady;
+                result.Success = true;
+                _logger.Info(result.Message);
+            }
+            catch (Exception e)
+            {
+                result.Data = null;
+                result.Success = false;
+                result.Message += "Error : Failed to set PaymentServiceReady : Error was : " + e.Message + " ";
+                _logger.Error("Error : Failed to set PaymentServiceReady : Error was : " + e.Message + " ");
+            }
+            return result;
+
+        }
+
+
 
         [Topic("pubsub", "alertServiceReady")]
         [HttpPost("alertServiceReady")]
