@@ -8,6 +8,7 @@ using MetroLog;
 using Dapr.Client;
 using NetworkMonitor.Scheduler.Services;
 using NetworkMonitor.Objects.Factory;
+using NetworkMonitor.BackgroundService;
 
 namespace NetworkMonitor.Scheduler
 {
@@ -45,7 +46,7 @@ namespace NetworkMonitor.Scheduler
 
                         _daprClient.PublishEventAsync("pubsub", "monitorAlert", daprMetadata);
                         _logger.Info("Sent monitorAlert event.");
-                        serviceState.IsAlertServiceReady = false;
+                        //serviceState.IsAlertServiceReady = false;
                     }
                     else
                     {
