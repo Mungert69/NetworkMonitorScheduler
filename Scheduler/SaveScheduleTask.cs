@@ -40,7 +40,7 @@ namespace NetworkMonitor.Scheduler
                     {
                         _daprClient.PublishEventAsync("pubsub", "monitorSaveData", daprMetadata);
                         _logger.Info("Sent monitorSaveData event.");
-                       // serviceState.IsMonitorServiceReady = false;
+                        serviceState.IsMonitorServiceReady = false;
                     }
                     else
                     {

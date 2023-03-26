@@ -48,7 +48,7 @@ namespace NetworkMonitor.Scheduler
 
                             _daprClient.PublishEventAsync("pubsub", "monitorCheck" , daprMetadata);
                             _logger.Info("Sent monitorCheck event ");
-                            //serviceState.IsPaymentServiceReady = false;
+                            serviceState.IsMonitorCheckServiceReady = false;
 
                         }
                         else
