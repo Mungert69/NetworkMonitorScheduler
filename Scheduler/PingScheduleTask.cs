@@ -39,7 +39,7 @@ namespace NetworkMonitor.Scheduler
                 bool isDaprReady = _daprClient.CheckHealthAsync().Result;
                 if (isDaprReady)
                 {
-                    _logger.Info("Dapr Client Status is healthy");
+                    //_logger.Info("Dapr Client Status is healthy");
                     ProcessorConnectObj connectObj = new ProcessorConnectObj();
                     connectObj.NextRunInterval = RunScheduleInterval();
                     var daprMetadata = new Dictionary<string, string>();

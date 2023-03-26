@@ -164,6 +164,32 @@ namespace NetworkMonitor.Scheduler.Controllers
         }
 
 
+   [Topic("pubsub", "monitorCheckServiceReady")]
+        [HttpPost("monitorCheckServiceReady")]
+        [Consumes("application/json")]
+        public ActionResult<ResultObj> MonitorCheckServiceReady([FromBody] MonitorServiceInitObj monitorObj)
+        {
+            ResultObj result = new ResultObj();
+            result.Success = false;
+            result.Message = "MessageAPI : MonitorCheckServiceReady : ";
+
+            try
+            {
+                _serviceState.IsMonitorCheckServiceReady = monitorObj.IsMonitorCheckServiceReady;
+                result.Message += "Success set MonitorCheckServiceReady to " + monitorObj.IsMonitorCheckServiceReady;
+                result.Success = true;
+                _logger.Info(result.Message);
+            }
+            catch (Exception e)
+            {
+                result.Data = null;
+                result.Success = false;
+                result.Message += "Error : Failed to set MonitorCheckServiceReady : Error was : " + e.Message + " ";
+                _logger.Error("Error : Failed to set MonitorCheckServiceReady : Error was : " + e.Message + " ");
+            }
+            return result;
+
+        }
 
 
     }
