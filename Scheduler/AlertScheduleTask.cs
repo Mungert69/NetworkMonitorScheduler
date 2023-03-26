@@ -46,7 +46,7 @@ namespace NetworkMonitor.Scheduler
 
                         _daprClient.PublishEventAsync("pubsub", "monitorAlert", daprMetadata);
                         _logger.Info("Sent monitorAlert event.");
-                        //serviceState.IsAlertServiceReady = false;
+                        serviceState.IsAlertServiceReady = false;
                     }
                     else
                     {
