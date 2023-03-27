@@ -53,8 +53,8 @@ namespace NetworkMonitor.Scheduler
                         }
                         else
                         {
-                            _daprClient.PublishEventAsync("pubsub", "monitorCheckWakeUp" , daprMetadata);
-                            _logger.Warn("MonitorCheck Service has not signalled it is ready");
+                            _daprClient.PublishEventAsync("pubsub", "monitorCheck" , daprMetadata);
+                            _logger.Warn("MonitorCheck Service has not signalled it is ready sent monitorCheck");
                         }
                     
                 }
