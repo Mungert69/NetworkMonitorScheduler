@@ -21,6 +21,7 @@
   <PackageReference Include="CloudNative.CloudEvents" Version="2.5.1" />
     <PackageReference Include="CloudNative.CloudEvents.AspNetCore" Version="2.5.1" />
     <PackageReference Include="CloudNative.CloudEvents.NewtonsoftJson" Version="2.5.1" />
+    <PackageReference Include="HostInitActions" Version="1.2.0" />
     <PackageReference Include="MailKit" Version="3.6.0" />
     <PackageReference Include="MetroLog.Net6" Version="2.1.0" />
     <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
