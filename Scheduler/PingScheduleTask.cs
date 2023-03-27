@@ -29,8 +29,7 @@ namespace NetworkMonitor.Scheduler
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
-                //_logger.Info("Dapr Client Status is healthy");
-                ProcessorConnectObj connectObj = new ProcessorConnectObj();
+                 ProcessorConnectObj connectObj = new ProcessorConnectObj();
                 connectObj.NextRunInterval = RunScheduleInterval();
                 foreach (ProcessorInstance procInst in serviceState.ProcessorInstances)
                 {
