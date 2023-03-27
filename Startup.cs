@@ -3,17 +3,13 @@ using NetworkMonitor.Scheduler.Services;
 using NetworkMonitor.Objects.Factory;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NetworkMonitor.Auth;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Threading;
-using MetroLog;
 using HostInitActions;
+
 namespace NetworkMonitor
 {
     public class Startup
