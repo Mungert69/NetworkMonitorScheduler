@@ -9,19 +9,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using MetroLog;
 using System.Collections.Generic;
-using Dapr.Client;
-
 namespace NetworkMonitor.Scheduler
 {
     public class MonitorCheckScheduleTask: ScheduledProcessor
     {
         private bool firstRun;
         private ILogger _logger;
-        private DaprClient _daprClient;
-
-        public MonitorCheckScheduleTask(DaprClient daprClient, INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
+        public MonitorCheckScheduleTask(INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-            _daprClient = daprClient;
             firstRun = true;
              _logger = loggerFactory.GetLogger("MonitorCheckScheduleTask");
             string scheduleStr = config.GetValue<string>("MonitorCheckSchedule");
@@ -31,39 +26,20 @@ namespace NetworkMonitor.Scheduler
         {
             _logger.Info("SCHEDULE : Starting MonitorCheck schedule ");
             IServiceState serviceState = serviceProvider.GetService<IServiceState>();
-
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
             {
-                bool isDaprReady = _daprClient.CheckHealthAsync().Result;
-                if (isDaprReady)
-                {
-                    //_logger.Info("Dapr Client Status is healthy");
-                    var daprMetadata = new Dictionary<string, string>();
-                    daprMetadata.Add("ttlInSeconds", "60");
-
-         
                         if (serviceState.IsMonitorCheckServiceReady)
                         {
-
-                            _daprClient.PublishEventAsync("pubsub", "monitorCheck" , daprMetadata);
+                            serviceState.RabbitRepo.Publish( "monitorCheck", null );
                             _logger.Info("Sent monitorCheck event ");
                             serviceState.IsMonitorCheckServiceReady = false;
-
                         }
                         else
                         {
-                            _daprClient.PublishEventAsync("pubsub", "monitorCheck" , daprMetadata);
+                            serviceState.RabbitRepo.Publish("monitorCheck",null );
                             _logger.Warn("MonitorCheck Service has not signalled it is ready sent monitorCheck");
                         }
-                    
-                }
-                else
-                {
-                    _logger.Fatal("Dapr Client Status is not healthy");
-                }
-
-
             }
             catch (Exception e)
             {
@@ -72,7 +48,5 @@ namespace NetworkMonitor.Scheduler
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;
         }
-
-
     }
 }
