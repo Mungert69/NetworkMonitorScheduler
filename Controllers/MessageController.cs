@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using NetworkMonitor.Utils;
 using System.Linq;
 
-using Dapr;
 
 namespace NetworkMonitor.Scheduler.Controllers
 {
@@ -26,35 +25,7 @@ namespace NetworkMonitor.Scheduler.Controllers
             _serviceState=serviceState;
           
         }
-        [Topic("pubsub", "processorReady")]
-        [HttpPost("processorReady")]
-        [Consumes("application/json")]
-        public ActionResult<ResultObj> ProcessorReady([FromBody] ProcessorInitObj processorObj)
-        {
-            ResultObj result = new ResultObj();
-            result.Success = false;
-            result.Message = "MessageAPI : ProcessorrReady : ";
-
-            try
-            {
-                var procInst=new ProcessorInstance();
-                procInst.ID=processorObj.AppID;
-                procInst.IsReady=processorObj.IsProcessorReady;
-                result=_serviceState.SetProcessorReady( procInst);
-                _logger.Info(result.Message);
-            }
-            catch (Exception e)
-            {
-                // At the moment this exception is redundent as expection is caught inside SetProcessorReady.
-                result.Data = null;
-                result.Success = false;
-                result.Message += "Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ");
-            }
-            return result;
-
-        }
-
+       
         [HttpGet("ResetReportSent")]
         public ActionResult<ResultObj> ResetReportSent()
         {
@@ -80,117 +51,6 @@ namespace NetworkMonitor.Scheduler.Controllers
 
         }
 
- [Topic("pubsub", "paymentServiceReady")]
-        [HttpPost("paymentServiceReady")]
-        [Consumes("application/json")]
-        public ActionResult<ResultObj> PaymentServiceReady([FromBody] PaymentServiceInitObj paymentObj)
-        {
-            ResultObj result = new ResultObj();
-            result.Success = false;
-            result.Message = "MessageAPI : PaymentServiceReady : ";
-
-            try
-            {
-                _serviceState.IsAlertServiceReady = paymentObj.IsPaymentServiceReady;
-                result.Message += "Success set PaymentServiceReady to " + paymentObj.IsPaymentServiceReady;
-                result.Success = true;
-                _logger.Info(result.Message);
-            }
-            catch (Exception e)
-            {
-                result.Data = null;
-                result.Success = false;
-                result.Message += "Error : Failed to set PaymentServiceReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set PaymentServiceReady : Error was : " + e.Message + " ");
-            }
-            return result;
-
-        }
-
-
-
-        [Topic("pubsub", "alertServiceReady")]
-        [HttpPost("alertServiceReady")]
-        [Consumes("application/json")]
-        public ActionResult<ResultObj> AlertServiceReady([FromBody] AlertServiceInitObj alertObj)
-        {
-            ResultObj result = new ResultObj();
-            result.Success = false;
-            result.Message = "MessageAPI : AlertServiceReady : ";
-
-            try
-            {
-                _serviceState.IsAlertServiceReady = alertObj.IsAlertServiceReady;
-                result.Message += "Success set AlertServiceReady to " + alertObj.IsAlertServiceReady;
-                result.Success = true;
-                _logger.Info(result.Message);
-            }
-            catch (Exception e)
-            {
-                result.Data = null;
-                result.Success = false;
-                result.Message += "Error : Failed to set AlertServiceReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set AlertServiceReady : Error was : " + e.Message + " ");
-            }
-            return result;
-
-        }
-
-        [Topic("pubsub", "monitorServiceReady")]
-        [HttpPost("monitorServiceReady")]
-        [Consumes("application/json")]
-        public ActionResult<ResultObj> MonitorServiceReady([FromBody] MonitorServiceInitObj monitorObj)
-        {
-            ResultObj result = new ResultObj();
-            result.Success = false;
-            result.Message = "MessageAPI : MonitorServiceReady : ";
-
-            try
-            {
-                _serviceState.IsMonitorServiceReady = monitorObj.IsServiceReady;
-                result.Message += "Success set MonitorServiceReady to " + monitorObj.IsServiceReady;
-                result.Success = true;
-                _logger.Info(result.Message);
-            }
-            catch (Exception e)
-            {
-                result.Data = null;
-                result.Success = false;
-                result.Message += "Error : Failed to set MonitorServiceReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set MonitorServiceReady : Error was : " + e.Message + " ");
-            }
-            return result;
-
-        }
-
-
-   [Topic("pubsub", "monitorCheckServiceReady")]
-        [HttpPost("monitorCheckServiceReady")]
-        [Consumes("application/json")]
-        public ActionResult<ResultObj> MonitorCheckServiceReady([FromBody] MonitorServiceInitObj monitorObj)
-        {
-            ResultObj result = new ResultObj();
-            result.Success = false;
-            result.Message = "MessageAPI : MonitorCheckServiceReady : ";
-
-            try
-            {
-                _serviceState.IsMonitorCheckServiceReady = monitorObj.IsMonitorCheckServiceReady;
-                result.Message += "Success set MonitorCheckServiceReady to " + monitorObj.IsMonitorCheckServiceReady;
-                result.Success = true;
-                _logger.Info(result.Message);
-            }
-            catch (Exception e)
-            {
-                result.Data = null;
-                result.Success = false;
-                result.Message += "Error : Failed to set MonitorCheckServiceReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set MonitorCheckServiceReady : Error was : " + e.Message + " ");
-            }
-            return result;
-
-        }
-
-
+ 
     }
 }

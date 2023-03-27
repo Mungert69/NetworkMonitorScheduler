@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.Extensions.Configuration;
 using NetworkMonitor.Objects;
 using MailKit.Net.Smtp;
@@ -8,6 +10,8 @@ using MetroLog;
 using MimeKit;
 using NetworkMonitor.Utils.Helpers;
 using NetworkMonitor.Objects.Factory;
+using NetworkMonitor.Objects.Repository;
+
 namespace NetworkMonitor.Scheduler.Services
 {
     public class ProcessorInstance
@@ -18,45 +22,51 @@ namespace NetworkMonitor.Scheduler.Services
     }
     public interface IServiceState
     {
+        Task Init();
         bool IsAlertServiceReady { get; set; }
         bool IsPaymentServiceReady { get; set; }
-          bool IsMonitorCheckServiceReady { get; set; }
+        bool IsMonitorCheckServiceReady { get; set; }
         bool IsMonitorServiceReady { get; set; }
         List<ProcessorInstance> ProcessorInstances { get; }
         ResultObj SetProcessorReady(ProcessorInstance procInst);
         ResultObj CheckHealth();
         ResultObj SendHealthReport(string reportMessage);
         ResultObj ResetReportSent();
+         public RabbitListener RabbitRepo { get; }
     }
     public class ServiceState : IServiceState
     {
         private List<ProcessorInstance> _processorInstances = new List<ProcessorInstance>();
         private Dictionary<string, List<DateTime>> _processorStateChanges = new Dictionary<string, List<DateTime>>();
         private List<DateTime> _monitorServiceStateChanges = new List<DateTime>();
-          private List<DateTime> _monitorCheckServiceStateChanges = new List<DateTime>();
+        private List<DateTime> _monitorCheckServiceStateChanges = new List<DateTime>();
         private List<DateTime> _alertServiceStateChanges = new List<DateTime>();
         private List<DateTime> _paymentServiceStateChanges = new List<DateTime>();
         private bool _isAlertServiceReady = true;
         private bool _isPaymentServiceReady = true;
         private bool _isMonitorServiceReady = true;
-         private bool _isMonitorCheckServiceReady = true;
+        private bool _isMonitorCheckServiceReady = true;
         private bool _isMonitorServiceReportSent = false;
-          private bool _isMonitorCheckServiceReportSent = false;
+        private bool _isMonitorCheckServiceReportSent = false;
         private bool _isAlertServiceReportSent = false;
         private bool _isPaymentServiceReportSent = false;
         private IConfiguration _config;
         private ILogger _logger;
         private SystemParams _systemParams;
-        public ServiceState(INetLoggerFactory loggerFactory, IConfiguration config)
+        private RabbitListener _rabbitRepo;
+        private CancellationToken _token;
+        public RabbitListener RabbitRepo { get => _rabbitRepo; }
+        public ServiceState(INetLoggerFactory loggerFactory, IConfiguration config, CancellationTokenSource cancellationTokenSource)
         {
             _config = config;
             _logger = loggerFactory.GetLogger("ServiceState");
+            _token = cancellationTokenSource.Token;
+            _token.Register(() => OnStopping());
             _systemParams = SystemParamsHelper.getSystemParams(_config, _logger);
             _alertServiceStateChanges.Add(DateTime.UtcNow);
             _paymentServiceStateChanges.Add(DateTime.UtcNow);
             _monitorServiceStateChanges.Add(DateTime.UtcNow);
-             _monitorCheckServiceStateChanges.Add(DateTime.UtcNow);
-
+            _monitorCheckServiceStateChanges.Add(DateTime.UtcNow);
             List<ProcessorObj> processorList = new List<ProcessorObj>();
             _config.GetSection("ProcessorList").Bind(processorList);
             foreach (var processorObj in processorList)
@@ -72,13 +82,42 @@ namespace NetworkMonitor.Scheduler.Services
             {
                 entry.Value.Add(DateTime.UtcNow);
             }
-
+            try
+            {
+                _rabbitRepo = new RabbitListener(_logger, this, _systemParams.RabbitInstanceName, _systemParams.RabbitHostName);
+            }
+            catch (Exception e)
+            {
+                _logger.Fatal(" Could not setup RabbitListner. Error was : " + e.ToString() + " . ");
+            }
+        }
+        private void OnStopping()
+        {
+            ResultObj result = new ResultObj();
+            result.Message = " SERVICE SHUTDOWN : Starting shutdown of SchedulerService : ";
+            try
+            {
+                result.Message += " Nothing to do. ";
+                result.Success = true;
+                _logger.Info(result.Message);
+                _logger.Warn("SERVICE SHUTDOWN : Complete : ");
+            }
+            catch (Exception e)
+            {
+                _logger.Fatal("Error : Failed to run OnStopping during shutdown : Error Was : " + e.Message);
+            }
+        }
+        public Task Init()
+        {
+            return Task.Run(() =>
+              {
+              });
         }
         public ResultObj ResetReportSent()
         {
             _isAlertServiceReportSent = false;
             _isMonitorServiceReportSent = false;
-            _isMonitorCheckServiceReportSent=false;
+            _isMonitorCheckServiceReportSent = false;
             _isPaymentServiceReady = false;
             _processorInstances.ForEach(f =>
             {
@@ -113,7 +152,7 @@ namespace NetworkMonitor.Scheduler.Services
                 _monitorServiceStateChanges.Add(DateTime.UtcNow);
             }
         }
-         public bool IsMonitorCheckServiceReady
+        public bool IsMonitorCheckServiceReady
         {
             get => _isMonitorCheckServiceReady; set
             {

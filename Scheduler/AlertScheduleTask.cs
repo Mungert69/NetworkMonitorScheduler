@@ -1,5 +1,4 @@
-﻿
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -9,24 +8,19 @@ using Dapr.Client;
 using NetworkMonitor.Scheduler.Services;
 using NetworkMonitor.Objects.Factory;
 using NetworkMonitor.BackgroundService;
-
 namespace NetworkMonitor.Scheduler
 {
     public class AlertScheduleTask : ScheduledProcessor
     {
         private bool firstRun;
         private ILogger _logger;
-        private DaprClient _daprClient;
-
-        public AlertScheduleTask(DaprClient daprClient,INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
+        public AlertScheduleTask(INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-            _daprClient = daprClient;
-             _logger = loggerFactory.GetLogger("AlertScheduleTask");
+            _logger = loggerFactory.GetLogger("AlertScheduleTask");
             firstRun = true;
             string scheduleStr = config.GetValue<string>("AlertSchedule");
             updateSchedule(scheduleStr);
         }
-
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
             _logger.Info("SCHEDULE  : Starting Alert schedule ");
@@ -34,40 +28,23 @@ namespace NetworkMonitor.Scheduler
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
-                bool isDaprReady = _daprClient.CheckHealthAsync().Result;
-                var daprMetadata = new Dictionary<string, string>();
-                daprMetadata.Add("ttlInSeconds", "60");
-                if (isDaprReady)
+                if (serviceState.IsAlertServiceReady)
                 {
-                    //_logger.Info("Dapr Client Status is healthy");
-                    if (serviceState.IsAlertServiceReady)
-                    {
-
-
-                        _daprClient.PublishEventAsync("pubsub", "monitorAlert", daprMetadata);
-                        _logger.Info("Sent monitorAlert event.");
-                        serviceState.IsAlertServiceReady = false;
-                    }
-                    else
-                    {
-                        _daprClient.PublishEventAsync("pubsub", "serviceWakeUp", daprMetadata);
-
-                        _logger.Warn("AlertService has not signalled it is ready");
-                    }
+                    serviceState.RabbitRepo.Publish("monitorAlert", null);
+                    _logger.Info("Sent monitorAlert event.");
+                    serviceState.IsAlertServiceReady = false;
                 }
                 else
                 {
-                    _logger.Fatal("Dapr Client Status is not healthy");
+                    serviceState.RabbitRepo.Publish("serviceWakeUp", null);
+                    _logger.Warn("AlertService has not signalled it is ready");
                 }
             }
             catch (Exception e)
             {
                 _logger.Error("Error : occured in AlertScheduleTask.ProcesInScope() . Error was : " + e.Message.ToString());
             }
-
             return Task.CompletedTask;
         }
-
-
     }
 }

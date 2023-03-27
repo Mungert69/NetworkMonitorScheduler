@@ -7,17 +7,14 @@ using NetworkMonitor.Scheduler.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using MetroLog;
-using Dapr.Client;
 using NetworkMonitor.BackgroundService;
 namespace NetworkMonitor.Scheduler
 {
     public class SaveScheduleTask : ScheduledProcessor
     {
         private ILogger _logger;
-        private DaprClient _daprClient;
-        public SaveScheduleTask(DaprClient daprClient, INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
+        public SaveScheduleTask( INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-            _daprClient = daprClient;
               _logger = loggerFactory.GetLogger("SaveScheduleTask");
             string scheduleStr = config.GetValue<string>("SaveSchedule");
             updateSchedule(scheduleStr);
@@ -29,29 +26,20 @@ namespace NetworkMonitor.Scheduler
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
-                bool isDaprReady = _daprClient.CheckHealthAsync().Result;
-                var daprMetadata = new Dictionary<string, string>();
-                // ttl 6h mins 100s.
-                daprMetadata.Add("ttlInSeconds", "21500");
-                if (isDaprReady)
-                {
+                
                     //_logger.Info("Dapr Client Status is healthy");
                     if (serviceState.IsMonitorServiceReady)
                     {
-                        _daprClient.PublishEventAsync("pubsub", "monitorSaveData", daprMetadata);
+                        serviceState.RabbitRepo.Publish( "monitorSaveData", null);
                         _logger.Info("Sent monitorSaveData event.");
                         serviceState.IsMonitorServiceReady = false;
                     }
                     else
                     {
-                        _daprClient.PublishEventAsync("pubsub", "serviceWakeUp", daprMetadata);
+                        serviceState.RabbitRepo.Publish("serviceWakeUp", null);
                         _logger.Warn("MonitorService has not signalled it is ready");
                     }
-                }
-                else
-                {
-                    _logger.Fatal("Dapr Client Status is not healthy");
-                }
+               
             }
             catch (Exception e)
             {
