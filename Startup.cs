@@ -11,26 +11,25 @@ using NetworkMonitor.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using System;
+using System.Threading;
 using MetroLog;
-
+using HostInitActions;
 namespace NetworkMonitor
 {
     public class Startup
     {
+        private readonly CancellationTokenSource _cancellationTokenSource;
         public Startup(IConfiguration configuration)
         {
+            _cancellationTokenSource = new CancellationTokenSource();
             Configuration = configuration;
         }
-
         public IConfiguration Configuration { get; }
-
         private IServiceCollection _services;
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             _services = services;
-
             services.AddSingleton<IHostedService, SaveScheduleTask>();
             services.AddSingleton<IHostedService, AlertScheduleTask>();
             services.AddSingleton<IHostedService, PingScheduleTask>();
@@ -38,21 +37,19 @@ namespace NetworkMonitor
             services.AddSingleton<IHostedService, MonitorCheckScheduleTask>();
             services.AddSingleton<IHostedService, HealthCheckScheduleTask>();
             services.AddSingleton<IServiceState, ServiceState>();
-
+            services.AddSingleton(_cancellationTokenSource);
             services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));
-
-            services.AddControllers().AddDapr();
+            services.AddControllers();
             services.AddSingleton<INetLoggerFactory, NetLoggerFactory>();
-
-
-
+            services.AddAsyncServiceInitialization()
+                   .AddInitAction<IServiceState>(async (serviceState) =>
+                   {
+                       await serviceState.Init();
+                   });
         }
-
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime applicationLifetime)
         {
-
-
             app.UseRouting();
             app.UseCloudEvents();
             app.UseEndpoints(endpoints =>

@@ -1,11 +1,10 @@
 {
-	"folders": [
-		{
-			"path": ".."
-		},
-		{
-			"path": "../../NetworkMonitor"
-		}
-	],
-	"settings": {}
+    "folders": [
+        {
+            "path": ".."
+        },
+        {
+            "path": "../../NetworkMonitor"
+        }
+    ]
 }
