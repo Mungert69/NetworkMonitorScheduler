@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using MetroLog;
-using Dapr.Client;
 using NetworkMonitor.Scheduler.Services;
 using NetworkMonitor.Objects.Factory;
 using NetworkMonitor.BackgroundService;

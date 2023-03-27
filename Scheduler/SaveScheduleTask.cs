@@ -26,8 +26,6 @@ namespace NetworkMonitor.Scheduler
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
-                
-                    //_logger.Info("Dapr Client Status is healthy");
                     if (serviceState.IsMonitorServiceReady)
                     {
                         serviceState.RabbitRepo.Publish( "monitorSaveData", null);
@@ -39,7 +37,6 @@ namespace NetworkMonitor.Scheduler
                         serviceState.RabbitRepo.Publish("serviceWakeUp", null);
                         _logger.Warn("MonitorService has not signalled it is ready");
                     }
-               
             }
             catch (Exception e)
             {
