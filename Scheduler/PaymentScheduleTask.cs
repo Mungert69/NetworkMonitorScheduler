@@ -55,7 +55,7 @@ namespace NetworkMonitor.Scheduler
                         else
                         {
                             _daprClient.PublishEventAsync("pubsub", "paymentWakeUp" , daprMetadata);
-                            _logger.Warn("Payment Service has not signalled it is ready");
+                            _logger.Warn("Payment Service has not signalled it is ready sent paymentWakeUp");
                         }
                     
                 }
