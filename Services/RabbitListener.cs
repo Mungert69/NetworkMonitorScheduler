@@ -152,7 +152,7 @@ namespace NetworkMonitor.Objects.Repository
                         rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
                         rabbitMQObj.Consumer.Received += (model, ea) =>
                     {
-                        result = AlertServiceReady(ConvertToList<AlertServiceInitObj>(model, ea));
+                        result = AlertServiceReady(ConvertToObject<AlertServiceInitObj>(model, ea));
                         rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
                     };
                         break;

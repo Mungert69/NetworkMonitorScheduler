@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using MetroLog;
 using System.Collections.Generic;
-using Dapr.Client;
 
 namespace NetworkMonitor.Scheduler
 {
@@ -18,11 +17,10 @@ namespace NetworkMonitor.Scheduler
     {
         private bool _firstRun;
         private ILogger _logger;
-        private DaprClient _daprClient;
 
-        public HealthCheckScheduleTask(DaprClient daprClient, INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
+        public HealthCheckScheduleTask( INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-            _daprClient = daprClient;
+
              _logger = loggerFactory.GetLogger("HealthCheckScheduleTask");
             _firstRun=true;
             string scheduleStr = config.GetValue<string>("PingSchedule");
