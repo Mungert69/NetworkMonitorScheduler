@@ -1,10 +1,10 @@
 {
     "folders": [
         {
-            "path": "../../NetworkMonitor"
+            "path": "."
         },
         {
-            "path": "."
+            "path": "../NetworkMonitor"
         }
     ]
 }
