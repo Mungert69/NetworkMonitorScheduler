@@ -68,6 +68,8 @@ namespace NetworkMonitor.Scheduler.Services
             _monitorServiceStateChanges.Add(DateTime.UtcNow);
             _monitorCheckServiceStateChanges.Add(DateTime.UtcNow);
             List<ProcessorObj> processorList = new List<ProcessorObj>();
+             SystemUrl systemUrl = config.GetSection("SystemUrl").Get<SystemUrl>() ?? throw new ArgumentNullException("SystemUrl");
+           
             _config.GetSection("ProcessorList").Bind(processorList);
             foreach (var processorObj in processorList)
             {
@@ -84,7 +86,7 @@ namespace NetworkMonitor.Scheduler.Services
             }
             try
             {
-                _rabbitRepo = new RabbitListener(_logger, this, _systemParams.RabbitInstanceName, _systemParams.RabbitHostName);
+                _rabbitRepo = new RabbitListener(_logger,systemUrl, this);
             }
             catch (Exception e)
             {
