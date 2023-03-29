@@ -153,7 +153,7 @@ namespace NetworkMonitor.Objects.Repository
 
             try
             {
-                _serviceState.IsAlertServiceReady = paymentObj.IsPaymentServiceReady;
+                _serviceState.IsPaymentServiceReady= paymentObj.IsPaymentServiceReady;
                 result.Message += "Success set PaymentServiceReady to " + paymentObj.IsPaymentServiceReady;
                 result.Success = true;
                 _logger.Info(result.Message);
@@ -202,7 +202,7 @@ namespace NetworkMonitor.Objects.Repository
 
             try
             {
-                _serviceState.IsMonitorServiceReady = monitorObj.IsServiceReady;
+                _serviceState.IsMonitorCheckServiceReady = monitorObj.IsServiceReady;
                 result.Message += "Success set MonitorServiceReady to " + monitorObj.IsServiceReady;
                 result.Success = true;
                 _logger.Info(result.Message);
