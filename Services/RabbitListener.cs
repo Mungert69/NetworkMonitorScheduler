@@ -23,6 +23,7 @@ namespace NetworkMonitor.Objects.Repository
        
         {
             _serviceState=serviceState;
+	    Setup();
            }
         protected override void InitRabbitMQObjs()
         {
