@@ -13,13 +13,12 @@ namespace NetworkMonitor.Scheduler
 {
     public class AIScheduleTask : ScheduledProcessor
     {
-        private bool firstRun;
         private ILogger _logger;
         public AIScheduleTask(INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-            firstRun = true;
+
             _logger = loggerFactory.GetLogger("AISchedulerTask");
-            string scheduleStr = config.GetValue<string>("AIScheduler");
+            string scheduleStr = config.GetValue<string>("AISchedule");
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
@@ -34,7 +33,7 @@ namespace NetworkMonitor.Scheduler
             }
             catch (Exception e)
             {
-                _logger.Error("Error : occured in AISchedulerTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                _logger.Error("Error : occured in AIScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;
