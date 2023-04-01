@@ -131,7 +131,10 @@ namespace NetworkMonitor.Objects.Repository
                 var procInst=new ProcessorInstance();
                 procInst.ID=processorObj.AppID;
                 procInst.IsReady=processorObj.IsProcessorReady;
-                result=_serviceState.SetProcessorReady( procInst);
+                var resultProcesoor=_serviceState.SetProcessorReady( procInst);
+                result.Message+=resultProcesoor.Message;
+                result.Success=resultProcesoor.Success;
+
                 _logger.Info(result.Message);
             }
             catch (Exception e)
@@ -202,7 +205,7 @@ namespace NetworkMonitor.Objects.Repository
 
             try
             {
-                _serviceState.IsMonitorCheckServiceReady = monitorObj.IsServiceReady;
+                _serviceState.IsMonitorServiceReady = monitorObj.IsServiceReady;
                 result.Message += "Success set MonitorServiceReady to " + monitorObj.IsServiceReady;
                 result.Success = true;
                 _logger.Info(result.Message);
