@@ -243,6 +243,7 @@ namespace NetworkMonitor.Scheduler.Services
         }
         public ResultObj CheckHealth()
         {
+           
             var result = new ResultObj();
             result.Success = true;
             if (_monitorServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddHours(-6) && !_isMonitorServiceReportSent)
