@@ -32,6 +32,7 @@ namespace NetworkMonitor
             services.AddSingleton<IHostedService, PaymentScheduleTask>();
             services.AddSingleton<IHostedService, MonitorCheckScheduleTask>();
             services.AddSingleton<IHostedService, HealthCheckScheduleTask>();
+            services.AddSingleton<IHostedService, ResetScheduleTask>();
             services.AddSingleton<IHostedService, AIScheduleTask>();
             services.AddSingleton<IServiceState, ServiceState>();
             services.AddSingleton(_cancellationTokenSource);
