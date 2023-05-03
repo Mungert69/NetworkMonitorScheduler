@@ -69,40 +69,75 @@ namespace NetworkMonitor.Objects.Repository
                         rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
                         rabbitMQObj.Consumer.Received += (model, ea) =>
                     {
-                        result = ProcessorReady(ConvertToObject<ProcessorInitObj>(model, ea));
+                        try {
+                               result = ProcessorReady(ConvertToObject<ProcessorInitObj>(model, ea));
                         rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                        }
+                         catch (Exception ex)
+                        {
+                            _logger.Error(" Error : RabbitListener.DeclareConsumers.processorReady " + ex.Message);
+                        }
+                     
                     };
                         break;
                     case "paymentServiceReady":
                         rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
                         rabbitMQObj.Consumer.Received += (model, ea) =>
                     {
-                        result = PaymentServiceReady(ConvertToObject<PaymentServiceInitObj>(model, ea));
+                        try {
+                              result = PaymentServiceReady(ConvertToObject<PaymentServiceInitObj>(model, ea));
                         rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(" Error : RabbitListener.DeclareConsumers.paymentServiceReady " + ex.Message);
+                        }
+                      
                     };
                         break;
                     case "alertServiceReady":
                         rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
                         rabbitMQObj.Consumer.Received += (model, ea) =>
                     {
-                        result = AlertServiceReady(ConvertToObject<AlertServiceInitObj>(model, ea));
+                        try {
+                              result = AlertServiceReady(ConvertToObject<AlertServiceInitObj>(model, ea));
                         rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(" Error : RabbitListener.DeclareConsumers.alertServiceReady " + ex.Message);
+                        }
+                      
                     };
                         break;
                     case "monitorServiceReady":
                         rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
                         rabbitMQObj.Consumer.Received += (model, ea) =>
                     {
-                        result = MonitorServiceReady(ConvertToObject<MonitorServiceInitObj>(model, ea));
+                        try {
+                             result = MonitorServiceReady(ConvertToObject<MonitorServiceInitObj>(model, ea));
                         rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
+                        }
+                       
                     };
                         break;
                     case "monitorCheckServiceReady":
                         rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
                         rabbitMQObj.Consumer.Received += (model, ea) =>
                     {
-                        result = MonitorCheckServiceReady(ConvertToObject<MonitorServiceInitObj>(model, ea));
+                        try {
+                             result = MonitorCheckServiceReady(ConvertToObject<MonitorServiceInitObj>(model, ea));
                         rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(" Error : RabbitListener.DeclareConsumers.monitorCheckServiceReady " + ex.Message);
+                        }
+                       
                     };
                         break;
                 }
