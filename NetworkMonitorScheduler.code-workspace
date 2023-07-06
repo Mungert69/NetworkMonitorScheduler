@@ -6,5 +6,8 @@
         {
             "path": "../NetworkMonitor"
         }
-    ]
+    ],
+    "settings": {
+        "dotnet.defaultSolution": "/home/mahadeva/code/NetworkMonitorScheduler/NetworkMonitorScheduler.sln"
+    }
 }
