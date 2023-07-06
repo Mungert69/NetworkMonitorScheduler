@@ -11,6 +11,7 @@ using MimeKit;
 using NetworkMonitor.Utils.Helpers;
 using NetworkMonitor.Objects.Factory;
 using NetworkMonitor.Objects.Repository;
+using NCrontab;
 
 namespace NetworkMonitor.Scheduler.Services
 {
@@ -32,7 +33,7 @@ namespace NetworkMonitor.Scheduler.Services
         ResultObj CheckHealth();
         ResultObj SendHealthReport(string reportMessage);
         ResultObj ResetReportSent();
-         public RabbitListener RabbitRepo { get; }
+        public RabbitListener RabbitRepo { get; }
     }
     public class ServiceState : IServiceState
     {
@@ -55,6 +56,13 @@ namespace NetworkMonitor.Scheduler.Services
         private SystemParams _systemParams;
         private RabbitListener _rabbitRepo;
         private CancellationToken _token;
+        private TimeSpan _pingScheduleInterval;
+        private TimeSpan _monitorCheckInterval;
+        private TimeSpan _paymentInterval;
+        private TimeSpan _saveInterval;
+        private TimeSpan _alertInterval;
+        private TimeSpan _aIInterval;
+
         public RabbitListener RabbitRepo { get => _rabbitRepo; }
         public ServiceState(INetLoggerFactory loggerFactory, IConfiguration config, CancellationTokenSource cancellationTokenSource)
         {
@@ -68,7 +76,7 @@ namespace NetworkMonitor.Scheduler.Services
             _monitorServiceStateChanges.Add(DateTime.UtcNow);
             _monitorCheckServiceStateChanges.Add(DateTime.UtcNow);
             List<ProcessorObj> processorList = new List<ProcessorObj>();
-           
+
             _config.GetSection("ProcessorList").Bind(processorList);
             foreach (var processorObj in processorList)
             {
@@ -85,12 +93,40 @@ namespace NetworkMonitor.Scheduler.Services
             }
             try
             {
-                _rabbitRepo = new RabbitListener(_logger,_systemParams.ThisSystemUrl, this);
+                _rabbitRepo = new RabbitListener(_logger, _systemParams.ThisSystemUrl, this);
             }
             catch (Exception e)
             {
                 _logger.Fatal(" Could not setup RabbitListner. Error was : " + e.ToString() + " . ");
             }
+
+            try {
+     _pingScheduleInterval= GetScheduleInterval(_config["PingSchedule"]);
+         _monitorCheckInterval=GetScheduleInterval(_config["MonitorCheckSchedule"]);
+         _paymentInterval=GetScheduleInterval(_config["PaymentSchedule"]);
+         _saveInterval=GetScheduleInterval(_config["SaveSchedule"]);
+         _alertInterval=GetScheduleInterval(_config["AlertSchedule"]);
+         _aIInterval=GetScheduleInterval(_config["AISchedule"]);
+            }
+            catch (Exception e){
+ _logger.Error(" Could setup health check parameteres : " + e.ToString() + " . ");
+            }
+
+
+        }
+
+        private TimeSpan GetScheduleInterval(string cronTabString)
+        {
+            var schedule = CrontabSchedule.Parse(cronTabString);
+
+            var now = DateTime.Now;
+
+            var nextOccurrence = schedule.GetNextOccurrence(now);
+            var nextNextOccurrence = schedule.GetNextOccurrence(nextOccurrence);
+
+            var interval = nextNextOccurrence - nextOccurrence;
+
+            return interval;
         }
         private void OnStopping()
         {
@@ -243,10 +279,10 @@ namespace NetworkMonitor.Scheduler.Services
         }
         public ResultObj CheckHealth()
         {
-           
+
             var result = new ResultObj();
             result.Success = true;
-            if (_monitorServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddHours(-6) && !_isMonitorServiceReportSent)
+            if (_monitorServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddHours(-_saveInterval.Hours) && !_isMonitorServiceReportSent)
             {
                 //alert MonitorService not changing state
                 result.Success = false;
@@ -254,7 +290,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += "Failed : MonitorSerivce has not changed state for " + timeSpan.TotalHours + " h ";
                 _isMonitorServiceReportSent = true;
             }
-            if (_alertServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-2) && !_isAlertServiceReportSent)
+            if (_alertServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_alertInterval.Minutes*2) && !_isAlertServiceReportSent)
             {
                 //alert MonitorService not changing state
                 result.Success = false;
@@ -262,7 +298,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += "Failed : AlertSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
                 _isAlertServiceReportSent = true;
             }
-            if (_monitorCheckServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-2) && !_isMonitorCheckServiceReportSent)
+            if (_monitorCheckServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_monitorCheckInterval.Minutes*2) && !_isMonitorCheckServiceReportSent)
             {
                 //alert MonitorService not changing state
                 result.Success = false;
@@ -270,7 +306,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += "Failed : MonitorCheck has not changed state for " + timeSpan.TotalMinutes + " m ";
                 _isMonitorCheckServiceReportSent = true;
             }
-            if (_paymentServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-2) && !_isPaymentServiceReportSent)
+            if (_paymentServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_paymentInterval.Minutes*2) && !_isPaymentServiceReportSent)
             {
                 //payment MonitorService not changing state
                 result.Success = false;
@@ -280,7 +316,7 @@ namespace NetworkMonitor.Scheduler.Services
             }
             foreach (var procInst in _processorInstances)
             {
-                if (_processorStateChanges[procInst.ID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-2) && !procInst.IsReportSent)
+                if (_processorStateChanges[procInst.ID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-_pingScheduleInterval.Minutes*2) && !procInst.IsReportSent)
                 {
                     //alert MonitorService not changing state
                     result.Success = false;
