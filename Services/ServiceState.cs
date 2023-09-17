@@ -33,7 +33,7 @@ namespace NetworkMonitor.Scheduler.Services
         ResultObj CheckHealth();
         ResultObj SendHealthReport(string reportMessage);
         ResultObj ResetReportSent();
-        public RabbitListener RabbitRepo { get; }
+        public IRabbitRepo RabbitRepo { get; }
     }
     public class ServiceState : IServiceState
     {
@@ -54,7 +54,7 @@ namespace NetworkMonitor.Scheduler.Services
         private IConfiguration _config;
         private ILogger _logger;
         private SystemParams _systemParams;
-        private RabbitListener _rabbitRepo;
+        private IRabbitRepo _rabbitRepo;
         private CancellationToken _token;
         private TimeSpan _pingScheduleInterval;
         private TimeSpan _monitorCheckInterval;
@@ -63,14 +63,15 @@ namespace NetworkMonitor.Scheduler.Services
         private TimeSpan _alertInterval;
         private TimeSpan _aIInterval;
 
-        public RabbitListener RabbitRepo { get => _rabbitRepo; }
-        public ServiceState(INetLoggerFactory loggerFactory, IConfiguration config, CancellationTokenSource cancellationTokenSource)
+        public IRabbitRepo RabbitRepo { get => _rabbitRepo; }
+        public ServiceState(INetLoggerFactory loggerFactory, IConfiguration config, CancellationTokenSource cancellationTokenSource, IRabbitRepo rabbitRepo,SystemParamsHelper systemParamsHelper)
         {
             _config = config;
             _logger = loggerFactory.GetLogger("ServiceState");
+            _rabbitRepo=rabbitRepo;
             _token = cancellationTokenSource.Token;
             _token.Register(() => OnStopping());
-            _systemParams = SystemParamsHelper.getSystemParams(_config, _logger);
+            _systemParams = systemParamsHelper.GetSystemParams();
             _alertServiceStateChanges.Add(DateTime.UtcNow);
             _paymentServiceStateChanges.Add(DateTime.UtcNow);
             _monitorServiceStateChanges.Add(DateTime.UtcNow);
@@ -91,14 +92,7 @@ namespace NetworkMonitor.Scheduler.Services
             {
                 entry.Value.Add(DateTime.UtcNow);
             }
-            try
-            {
-                _rabbitRepo = new RabbitListener(_logger, _systemParams.ThisSystemUrl, this);
-            }
-            catch (Exception e)
-            {
-                _logger.Fatal(" Could not setup RabbitListner. Error was : " + e.ToString() + " . ");
-            }
+           
 
             try {
      _pingScheduleInterval= GetScheduleInterval(_config["PingSchedule"]);
