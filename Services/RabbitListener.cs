@@ -10,21 +10,39 @@ using Microsoft.AspNetCore.Mvc;
 using MetroLog;
 using NetworkMonitor.Scheduler.Services;
 using System;
-using System.Collections.Generic;
-using NetworkMonitor.Utils;
-using System.Text;
+using System.Threading.Tasks;
+using NetworkMonitor.Objects.Factory;
+using NetworkMonitor.Utils.Helpers;
 
 namespace NetworkMonitor.Objects.Repository
 {
-    public class RabbitListener : RabbitListenerBase
+      public interface IRabbitListener
+    {
+        ResultObj ProcessorReady(ProcessorInitObj processorObj);
+        ResultObj PaymentServiceReady(PaymentServiceInitObj paymentObj);
+        ResultObj AlertServiceReady(AlertServiceInitObj alertObj);
+        ResultObj MonitorServiceReady(MonitorServiceInitObj monitorObj);
+        ResultObj MonitorCheckServiceReady(MonitorServiceInitObj monitorObj);
+    }
+    public class RabbitListener : RabbitListenerBase, IRabbitListener
     {
         private IServiceState _serviceState;
-        public RabbitListener(ILogger logger,SystemUrl systemUrl, IServiceState serviceState) : base(logger,systemUrl)
+        public RabbitListener( IServiceState serviceState, INetLoggerFactory loggerFactory, SystemParamsHelper systemParamsHelper) : base(DeriveLogger(loggerFactory), DeriveSystemUrl(systemParamsHelper))
        
         {
             _serviceState=serviceState;
 	    Setup();
            }
+
+            private static ILogger DeriveLogger(INetLoggerFactory loggerFactory)
+        {
+            return loggerFactory.GetLogger("RabbitListener"); 
+        }
+
+        private static SystemUrl DeriveSystemUrl(SystemParamsHelper systemParamsHelper)
+        {
+            return systemParamsHelper.GetSystemParams().ThisSystemUrl;
+        }
         protected override void InitRabbitMQObjs()
         {
             _rabbitMQObjs.Add(new RabbitMQObj()

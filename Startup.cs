@@ -8,7 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using HostInitActions;
+using NetworkMonitor.Objects.Repository;
+using NetworkMonitor.Utils.Helpers;
 
 namespace NetworkMonitor
 {
@@ -26,6 +29,7 @@ namespace NetworkMonitor
         public void ConfigureServices(IServiceCollection services)
         {
             _services = services;
+            services.AddSingleton<SystemParamsHelper>();
             services.AddSingleton<IHostedService, SaveScheduleTask>();
             services.AddSingleton<IHostedService, AlertScheduleTask>();
             services.AddSingleton<IHostedService, PingScheduleTask>();
@@ -34,6 +38,8 @@ namespace NetworkMonitor
             services.AddSingleton<IHostedService, HealthCheckScheduleTask>();
             services.AddSingleton<IHostedService, ResetScheduleTask>();
             services.AddSingleton<IHostedService, AIScheduleTask>();
+            services.AddSingleton<IRabbitRepo, RabbitRepo>();
+            services.AddSingleton<IRabbitListener, RabbitListener>();
             services.AddSingleton<IServiceState, ServiceState>();
             services.AddSingleton(_cancellationTokenSource);
             services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));
@@ -43,7 +49,11 @@ namespace NetworkMonitor
                    .AddInitAction<IServiceState>(async (serviceState) =>
                    {
                        await serviceState.Init();
-                   });
+                   })
+                   .AddInitAction<IRabbitListener>((rabbitListener) =>
+                    {
+                        return Task.CompletedTask; 
+                    });
         }
        
     }
