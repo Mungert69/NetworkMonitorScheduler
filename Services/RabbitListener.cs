@@ -27,7 +27,7 @@ namespace NetworkMonitor.Objects.Repository
     public class RabbitListener : RabbitListenerBase, IRabbitListener
     {
         private IServiceState _serviceState;
-        public RabbitListener( IServiceState serviceState, INetLoggerFactory loggerFactory, SystemParamsHelper systemParamsHelper) : base(DeriveLogger(loggerFactory), DeriveSystemUrl(systemParamsHelper))
+        public RabbitListener( IServiceState serviceState, INetLoggerFactory loggerFactory, ISystemParamsHelper systemParamsHelper) : base(DeriveLogger(loggerFactory), DeriveSystemUrl(systemParamsHelper))
        
         {
             _serviceState=serviceState;
@@ -39,7 +39,7 @@ namespace NetworkMonitor.Objects.Repository
             return loggerFactory.GetLogger("RabbitListener"); 
         }
 
-        private static SystemUrl DeriveSystemUrl(SystemParamsHelper systemParamsHelper)
+        private static SystemUrl DeriveSystemUrl(ISystemParamsHelper systemParamsHelper)
         {
             return systemParamsHelper.GetSystemParams().ThisSystemUrl;
         }
