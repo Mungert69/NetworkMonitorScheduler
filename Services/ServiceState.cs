@@ -64,7 +64,7 @@ namespace NetworkMonitor.Scheduler.Services
         private TimeSpan _aIInterval;
 
         public IRabbitRepo RabbitRepo { get => _rabbitRepo; }
-        public ServiceState(INetLoggerFactory loggerFactory, IConfiguration config, CancellationTokenSource cancellationTokenSource, IRabbitRepo rabbitRepo,SystemParamsHelper systemParamsHelper)
+        public ServiceState(INetLoggerFactory loggerFactory, IConfiguration config, CancellationTokenSource cancellationTokenSource, IRabbitRepo rabbitRepo,ISystemParamsHelper systemParamsHelper)
         {
             _config = config;
             _logger = loggerFactory.GetLogger("ServiceState");

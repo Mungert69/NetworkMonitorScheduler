@@ -29,7 +29,7 @@ namespace NetworkMonitor
         public void ConfigureServices(IServiceCollection services)
         {
             _services = services;
-            services.AddSingleton<SystemParamsHelper>();
+            services.AddSingleton<ISystemParamsHelper, SystemParamsHelper>();
             services.AddSingleton<IHostedService, SaveScheduleTask>();
             services.AddSingleton<IHostedService, AlertScheduleTask>();
             services.AddSingleton<IHostedService, PingScheduleTask>();
