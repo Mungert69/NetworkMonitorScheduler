@@ -28,7 +28,7 @@ namespace NetworkMonitor.Scheduler.Services
         bool IsPaymentServiceReady { get; set; }
         bool IsMonitorCheckServiceReady { get; set; }
         bool IsMonitorServiceReady { get; set; }
-         bool IsMonitorCheckdataReady { get; set; }
+         bool IsMonitorCheckDataReady { get; set; }
         bool IsMonitorDataReady { get; set; }
         List<ProcessorInstance> ProcessorInstances { get; }
         ResultObj SetProcessorReady(ProcessorInstance procInst);
