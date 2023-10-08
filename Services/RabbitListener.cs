@@ -373,8 +373,8 @@ namespace NetworkMonitor.Objects.Repository
 
             try
             {
-                _serviceState.IsMonitorCheckServiceReady = dataObj.IsMonitorCheckServiceReady;
-                result.Message += "Success set MonitorCheckDataReady to " + dataObj.IsMonitorCheckServiceReady;
+                _serviceState.IsMonitorCheckDataReady = dataObj.IsMonitorCheckDataReady;
+                result.Message += "Success set MonitorCheckDataReady to " + dataObj.IsMonitorCheckDataReady;
                 result.Success = true;
                 _logger.Info(result.Message);
             }
