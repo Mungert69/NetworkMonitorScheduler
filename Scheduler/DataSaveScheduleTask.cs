@@ -39,7 +39,7 @@ namespace NetworkMonitor.Scheduler
                             IsDataSaveReady=true,
                             IsDataSaveMessage=true
                         };
-                        serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataWakeUp", serviceObj);
+                        serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataCheck", serviceObj);
                         _logger.Warn("DataSave has not signalled it is ready");
                     }
             }

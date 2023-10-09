@@ -258,19 +258,13 @@ namespace NetworkMonitor.Scheduler.Services
             var result = new ResultObj();
             try
             {
-                if (_processorInstances.FirstOrDefault(f => f.ID == procInst.ID).IsReady != procInst.IsReady)
-                {
+               
                     _processorInstances.FirstOrDefault(f => f.ID == procInst.ID).IsReady = procInst.IsReady;
                     _processorStateChanges[procInst.ID].Add(DateTime.UtcNow);
                     result.Success = true;
                     result.Message = "Success : Set Processor Ready for AppID " + procInst.ID + " to " + procInst.IsReady;
 
-                }
-                else{
-                    result.Success = false;
-                    result.Message = "Error : Setting Processor Ready for AppID " + procInst.ID + " the value did not change ";
-
-                }
+               
             }
             catch (Exception e)
             {
