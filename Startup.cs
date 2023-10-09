@@ -30,11 +30,12 @@ namespace NetworkMonitor
         {
             _services = services;
             services.AddSingleton<ISystemParamsHelper, SystemParamsHelper>();
-            services.AddSingleton<IHostedService, SaveScheduleTask>();
+            services.AddSingleton<IHostedService, DataSaveScheduleTask>();
             services.AddSingleton<IHostedService, AlertScheduleTask>();
             services.AddSingleton<IHostedService, PingScheduleTask>();
             services.AddSingleton<IHostedService, PaymentScheduleTask>();
-            services.AddSingleton<IHostedService, MonitorCheckScheduleTask>();
+            services.AddSingleton<IHostedService, DataCheckScheduleTask>();
+                    services.AddSingleton<IHostedService, DataPurgeScheduleTask>();
             services.AddSingleton<IHostedService, HealthCheckScheduleTask>();
             services.AddSingleton<IHostedService, ResetScheduleTask>();
             services.AddSingleton<IHostedService, AIScheduleTask>();

@@ -22,9 +22,7 @@ namespace NetworkMonitor.Objects.Repository
         ResultObj PaymentServiceReady(PaymentServiceInitObj paymentObj);
         ResultObj AlertServiceReady(AlertServiceInitObj alertObj);
         ResultObj MonitorServiceReady(MonitorServiceInitObj serviveObj);
-        ResultObj MonitorCheckServiceReady(MonitorServiceInitObj serviceObj);
         ResultObj MonitorDataReady(MonitorDataInitObj dataObj);
-        ResultObj MonitorCheckDataReady(MonitorDataInitObj dataObj);
     }
     public class RabbitListener : RabbitListenerBase, IRabbitListener
     {
@@ -69,22 +67,14 @@ namespace NetworkMonitor.Objects.Repository
                 FuncName = "monitorServiceReady",
                 MessageTimeout = 60000
             });
-            _rabbitMQObjs.Add(new RabbitMQObj()
-            {
-                ExchangeName = "monitorCheckServiceReady",
-                FuncName = "monitorCheckServiceReady"
-            });
+           
              _rabbitMQObjs.Add(new RabbitMQObj()
             {
                 ExchangeName = "monitorDataReady",
                 FuncName = "monitorDataReady",
                 MessageTimeout = 60000
             });
-            _rabbitMQObjs.Add(new RabbitMQObj()
-            {
-                ExchangeName = "monitorCheckDataReady",
-                FuncName = "monitorCheckDataReady"
-            });
+           
         }
         protected override ResultObj DeclareConsumers()
         {
@@ -156,21 +146,6 @@ namespace NetworkMonitor.Objects.Repository
                        
                     };
                         break;
-                    case "monitorCheckServiceReady":
-                        rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                        rabbitMQObj.Consumer.Received += (model, ea) =>
-                    {
-                        try {
-                             result = MonitorCheckServiceReady(ConvertToObject<MonitorServiceInitObj>(model, ea));
-                        rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Error(" Error : RabbitListener.DeclareConsumers.monitorCheckServiceReady " + ex.Message);
-                        }
-                       
-                    };
-                        break;
                      case "monitorDataReady":
                         rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
                         rabbitMQObj.Consumer.Received += (model, ea) =>
@@ -186,21 +161,7 @@ namespace NetworkMonitor.Objects.Repository
                        
                     };
                         break;
-                    case "monitorCheckDataReady":
-                        rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                        rabbitMQObj.Consumer.Received += (model, ea) =>
-                    {
-                        try {
-                             result = MonitorCheckDataReady(ConvertToObject<MonitorDataInitObj>(model, ea));
-                        rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Error(" Error : RabbitListener.DeclareConsumers.monitorCheckServiceReady " + ex.Message);
-                        }
-                       
-                    };
-                        break;
+                 
                 }
             });
                 result.Success = true;
@@ -301,7 +262,7 @@ namespace NetworkMonitor.Objects.Repository
 
             try
             {
-                _serviceState.IsMonitorServiceReady = serviceObj.IsServiceReady;
+                _serviceState.IsMonitorCheckServiceReady = serviceObj.IsServiceReady;
                 result.Message += "Success set MonitorServiceReady to " + serviceObj.IsServiceReady;
                 result.Success = true;
                 _logger.Info(result.Message);
@@ -317,30 +278,7 @@ namespace NetworkMonitor.Objects.Repository
 
         }
 
-       public ResultObj MonitorCheckServiceReady([FromBody] MonitorServiceInitObj serviceObj)
-        {
-            ResultObj result = new ResultObj();
-            result.Success = false;
-            result.Message = "MessageAPI : MonitorCheckServiceReady : ";
-
-            try
-            {
-                _serviceState.IsMonitorCheckServiceReady = serviceObj.IsMonitorCheckServiceReady;
-                result.Message += "Success set MonitorCheckServiceReady to " + serviceObj.IsMonitorCheckServiceReady;
-                result.Success = true;
-                _logger.Info(result.Message);
-            }
-            catch (Exception e)
-            {
-                result.Data = null;
-                result.Success = false;
-                result.Message += "Error : Failed to set MonitorCheckServiceReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set MonitorCheckServiceReady : Error was : " + e.Message + " ");
-            }
-            return result;
-
-        }
-
+    
     public ResultObj MonitorDataReady([FromBody] MonitorDataInitObj dataObj)
         {
             ResultObj result = new ResultObj();
@@ -349,8 +287,21 @@ namespace NetworkMonitor.Objects.Repository
 
             try
             {
-                _serviceState.IsMonitorDataReady = dataObj.IsServiceReady;
-                result.Message += "Success set MonitorDataReady to " + dataObj.IsServiceReady;
+                string message="";
+                if (dataObj.IsDataMessage){
+                    _serviceState.IsMonitorCheckDataReady = dataObj.IsDataReady;
+                    message+=" Data Ready";
+                }
+                 if (dataObj.IsDataSaveMessage){
+                    _serviceState.IsMonitorDataSaveReady = dataObj.IsDataSaveReady;
+                     message+=" Data Save Ready";
+                }
+                 if (dataObj.IsDataPurgeMessage){
+                    _serviceState.IsMonitorDataPurgeReady = dataObj.IsDataPurgeReady;
+                     message+=" Data Purge Ready";
+                }
+               
+                result.Message += "Success set monitorDataReady " + message;
                 result.Success = true;
                 _logger.Info(result.Message);
             }
@@ -365,30 +316,7 @@ namespace NetworkMonitor.Objects.Repository
 
         }
 
-       public ResultObj MonitorCheckDataReady([FromBody] MonitorDataInitObj dataObj)
-        {
-            ResultObj result = new ResultObj();
-            result.Success = false;
-            result.Message = "MessageAPI : MonitorCheckDataReady : ";
-
-            try
-            {
-                _serviceState.IsMonitorCheckDataReady = dataObj.IsMonitorCheckDataReady;
-                result.Message += "Success set MonitorCheckDataReady to " + dataObj.IsMonitorCheckDataReady;
-                result.Success = true;
-                _logger.Info(result.Message);
-            }
-            catch (Exception e)
-            {
-                result.Data = null;
-                result.Success = false;
-                result.Message += "Error : Failed to set MonitorCheckDataReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set MonitorCheckDataReady : Error was : " + e.Message + " ");
-            }
-            return result;
-
-        }
-
+      
 
    }
 }

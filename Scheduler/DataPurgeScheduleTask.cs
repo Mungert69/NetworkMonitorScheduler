@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using NetworkMonitor.Objects.Factory;
+using NetworkMonitor.Objects.ServiceMessage;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -25,15 +26,19 @@ namespace NetworkMonitor.Scheduler
             IServiceState serviceState = serviceProvider.GetService<IServiceState>();
             try
             {
-                    if (serviceState.IsMonitorDataReady)
+                    if (serviceState.IsMonitorDataPurgeReady)
                     {
                         serviceState.RabbitRepo.Publish( "dataPurge", null);
                         _logger.Info("Sent purgeData event.");
-                        serviceState.IsMonitorDataReady = false;
+                        serviceState.IsMonitorDataPurgeReady = false;
                     }
                     else
                     {
-                        serviceState.RabbitRepo.Publish("dataWakeUp", null);
+                         var serviceObj=new MonitorDataInitObj(){
+                            IsDataPurgeReady=true,
+                            IsDataPurgeMessage=true
+                        };
+                        serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataWakeUp", serviceObj);
                         _logger.Warn("MonitorData has not signalled it is ready");
                     }
             }

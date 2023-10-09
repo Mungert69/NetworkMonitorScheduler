@@ -27,9 +27,9 @@ namespace NetworkMonitor.Scheduler.Services
         bool IsAlertServiceReady { get; set; }
         bool IsPaymentServiceReady { get; set; }
         bool IsMonitorCheckServiceReady { get; set; }
-        bool IsMonitorServiceReady { get; set; }
-         bool IsMonitorCheckDataReady { get; set; }
-        bool IsMonitorDataReady { get; set; }
+        bool IsMonitorDataSaveReady { get; set; }
+        bool IsMonitorCheckDataReady { get; set; }
+        bool IsMonitorDataPurgeReady { get; set; }
         List<ProcessorInstance> ProcessorInstances { get; }
         ResultObj SetProcessorReady(ProcessorInstance procInst);
         ResultObj CheckHealth();
@@ -41,21 +41,21 @@ namespace NetworkMonitor.Scheduler.Services
     {
         private List<ProcessorInstance> _processorInstances = new List<ProcessorInstance>();
         private Dictionary<string, List<DateTime>> _processorStateChanges = new Dictionary<string, List<DateTime>>();
-        private List<DateTime> _monitorServiceStateChanges = new List<DateTime>();
+        private List<DateTime> _monitorDataSaveStateChanges = new List<DateTime>();
         private List<DateTime> _monitorCheckServiceStateChanges = new List<DateTime>();
-                private List<DateTime> _monitorDataStateChanges = new List<DateTime>();
+        private List<DateTime> _monitorDataPurgeStateChanges = new List<DateTime>();
         private List<DateTime> _monitorCheckDataStateChanges = new List<DateTime>();
         private List<DateTime> _alertServiceStateChanges = new List<DateTime>();
         private List<DateTime> _paymentServiceStateChanges = new List<DateTime>();
         private bool _isAlertServiceReady = true;
         private bool _isPaymentServiceReady = true;
-        private bool _isMonitorServiceReady = true;
+        private bool _isMonitorDataSaveReady = true;
         private bool _isMonitorCheckServiceReady = true;
-          private bool _isMonitorDataReady = true;
+        private bool _isMonitorDataPurgeReady = true;
         private bool _isMonitorCheckDataReady = true;
-        private bool _isMonitorServiceReportSent = false;
+        private bool _isMonitorDataSaveReportSent = false;
         private bool _isMonitorCheckServiceReportSent = false;
-         private bool _isMonitorDataReportSent = false;
+        private bool _isMonitorDataPurgeReportSent = false;
         private bool _isMonitorCheckDataReportSent = false;
         private bool _isAlertServiceReportSent = false;
         private bool _isPaymentServiceReportSent = false;
@@ -67,26 +67,26 @@ namespace NetworkMonitor.Scheduler.Services
         private TimeSpan _pingScheduleInterval;
         private TimeSpan _monitorCheckInterval;
         private TimeSpan _paymentInterval;
-        private TimeSpan _saveInterval;
+        private TimeSpan _dataSaveInterval;
         private TimeSpan _alertInterval;
         private TimeSpan _aIInterval;
-         private TimeSpan _dataCheckInterval;
-          private TimeSpan _dataPurgeInterval;
+        private TimeSpan _dataCheckInterval;
+        private TimeSpan _dataPurgeInterval;
 
         public IRabbitRepo RabbitRepo { get => _rabbitRepo; }
-        public ServiceState(INetLoggerFactory loggerFactory, IConfiguration config, CancellationTokenSource cancellationTokenSource, IRabbitRepo rabbitRepo,ISystemParamsHelper systemParamsHelper)
+        public ServiceState(INetLoggerFactory loggerFactory, IConfiguration config, CancellationTokenSource cancellationTokenSource, IRabbitRepo rabbitRepo, ISystemParamsHelper systemParamsHelper)
         {
             _config = config;
             _logger = loggerFactory.GetLogger("ServiceState");
-            _rabbitRepo=rabbitRepo;
+            _rabbitRepo = rabbitRepo;
             _token = cancellationTokenSource.Token;
             _token.Register(() => OnStopping());
             _systemParams = systemParamsHelper.GetSystemParams();
             _alertServiceStateChanges.Add(DateTime.UtcNow);
             _paymentServiceStateChanges.Add(DateTime.UtcNow);
-            _monitorServiceStateChanges.Add(DateTime.UtcNow);
+            _monitorDataSaveStateChanges.Add(DateTime.UtcNow);
             _monitorCheckServiceStateChanges.Add(DateTime.UtcNow);
-                        _monitorDataStateChanges.Add(DateTime.UtcNow);
+            _monitorDataPurgeStateChanges.Add(DateTime.UtcNow);
             _monitorCheckDataStateChanges.Add(DateTime.UtcNow);
             List<ProcessorObj> processorList = new List<ProcessorObj>();
 
@@ -104,20 +104,22 @@ namespace NetworkMonitor.Scheduler.Services
             {
                 entry.Value.Add(DateTime.UtcNow);
             }
-           
 
-            try {
-     _pingScheduleInterval= GetScheduleInterval(_config["PingSchedule"]);
-         _monitorCheckInterval=GetScheduleInterval(_config["MonitorCheckSchedule"]);
-         _paymentInterval=GetScheduleInterval(_config["PaymentSchedule"]);
-         _saveInterval=GetScheduleInterval(_config["SaveSchedule"]);
-         _alertInterval=GetScheduleInterval(_config["AlertSchedule"]);
-         _aIInterval=GetScheduleInterval(_config["AISchedule"]);
-         _dataCheckInterval=GetScheduleInterval(_config["DataCheckSchedule"]);
-         _dataPurgeInterval=GetScheduleInterval(_config["DataPurgeSchedule"]);
+
+            try
+            {
+                _pingScheduleInterval = GetScheduleInterval(_config["PingSchedule"]);
+                _monitorCheckInterval = GetScheduleInterval(_config["MonitorCheckSchedule"]);
+                _paymentInterval = GetScheduleInterval(_config["PaymentSchedule"]);
+                _dataSaveInterval = GetScheduleInterval(_config["DataSaveSchedule"]);
+                _alertInterval = GetScheduleInterval(_config["AlertSchedule"]);
+                _aIInterval = GetScheduleInterval(_config["AISchedule"]);
+                _dataCheckInterval = GetScheduleInterval(_config["DataCheckSchedule"]);
+                _dataPurgeInterval = GetScheduleInterval(_config["DataPurgeSchedule"]);
             }
-            catch (Exception e){
- _logger.Error(" Could setup health check parameteres : " + e.ToString() + " . ");
+            catch (Exception e)
+            {
+                _logger.Error(" Could setup health check parameteres : " + e.ToString() + " . ");
             }
 
 
@@ -161,9 +163,9 @@ namespace NetworkMonitor.Scheduler.Services
         public ResultObj ResetReportSent()
         {
             _isAlertServiceReportSent = false;
-            _isMonitorServiceReportSent = false;
+            _isMonitorDataSaveReportSent = false;
             _isMonitorCheckServiceReportSent = false;
-            _isMonitorDataReportSent = false;
+            _isMonitorDataPurgeReportSent = false;
             _isMonitorCheckDataReportSent = false;
             _isPaymentServiceReady = false;
             _processorInstances.ForEach(f =>
@@ -179,48 +181,72 @@ namespace NetworkMonitor.Scheduler.Services
         {
             get => _isPaymentServiceReady; set
             {
-                _isPaymentServiceReady = value;
-                _paymentServiceStateChanges.Add(DateTime.UtcNow);
+                if (value != _isPaymentServiceReady)
+                {
+                    _isPaymentServiceReady = value;
+                    _paymentServiceStateChanges.Add(DateTime.UtcNow);
+                }
+
             }
         }
         public bool IsAlertServiceReady
         {
             get => _isAlertServiceReady; set
             {
-                _isAlertServiceReady = value;
-                _alertServiceStateChanges.Add(DateTime.UtcNow);
+                if (value != _isAlertServiceReady)
+                {
+                    _isAlertServiceReady = value;
+                    _alertServiceStateChanges.Add(DateTime.UtcNow);
+                }
+
             }
         }
-        public bool IsMonitorServiceReady
+        public bool IsMonitorDataSaveReady
         {
-            get => _isMonitorServiceReady; set
+            get => _isMonitorDataSaveReady; set
             {
-                _isMonitorServiceReady = value;
-                _monitorServiceStateChanges.Add(DateTime.UtcNow);
+                if (value != _isMonitorDataSaveReady)
+                {
+                    _isMonitorDataSaveReady = value;
+                    _monitorDataSaveStateChanges.Add(DateTime.UtcNow);
+                }
+
             }
         }
         public bool IsMonitorCheckServiceReady
         {
             get => _isMonitorCheckServiceReady; set
             {
-                _isMonitorCheckServiceReady = value;
-                _monitorCheckServiceStateChanges.Add(DateTime.UtcNow);
+                if (value != _isMonitorCheckServiceReady)
+                {
+                    _isMonitorCheckServiceReady = value;
+                    _monitorCheckServiceStateChanges.Add(DateTime.UtcNow);
+                }
+
             }
         }
-        public bool IsMonitorDataReady
+        public bool IsMonitorDataPurgeReady
         {
-            get => _isMonitorDataReady; set
+            get => _isMonitorDataPurgeReady; set
             {
-                _isMonitorDataReady = value;
-                _monitorDataStateChanges.Add(DateTime.UtcNow);
+                if (value != _isMonitorDataPurgeReady)
+                {
+                    _isMonitorDataPurgeReady = value;
+                    _monitorDataPurgeStateChanges.Add(DateTime.UtcNow);
+                }
+
             }
         }
         public bool IsMonitorCheckDataReady
         {
             get => _isMonitorCheckDataReady; set
             {
-                _isMonitorCheckDataReady = value;
-                _monitorCheckDataStateChanges.Add(DateTime.UtcNow);
+                if (value != _isMonitorCheckDataReady)
+                {
+                    _isMonitorCheckDataReady = value;
+                    _monitorCheckDataStateChanges.Add(DateTime.UtcNow);
+                }
+
             }
         }
         public List<ProcessorInstance> ProcessorInstances
@@ -232,10 +258,19 @@ namespace NetworkMonitor.Scheduler.Services
             var result = new ResultObj();
             try
             {
-                _processorInstances.FirstOrDefault(f => f.ID == procInst.ID).IsReady = procInst.IsReady;
-                _processorStateChanges[procInst.ID].Add(DateTime.UtcNow);
-                result.Success = true;
-                result.Message = "Success : Set Processor Ready for AppID " + procInst.ID + " to " + procInst.IsReady;
+                if (_processorInstances.FirstOrDefault(f => f.ID == procInst.ID).IsReady != procInst.IsReady)
+                {
+                    _processorInstances.FirstOrDefault(f => f.ID == procInst.ID).IsReady = procInst.IsReady;
+                    _processorStateChanges[procInst.ID].Add(DateTime.UtcNow);
+                    result.Success = true;
+                    result.Message = "Success : Set Processor Ready for AppID " + procInst.ID + " to " + procInst.IsReady;
+
+                }
+                else{
+                    result.Success = false;
+                    result.Message = "Error : Setting Processor Ready for AppID " + procInst.ID + " the value did not change ";
+
+                }
             }
             catch (Exception e)
             {
@@ -308,23 +343,23 @@ namespace NetworkMonitor.Scheduler.Services
 
             var result = new ResultObj();
             result.Success = true;
-            if (_monitorServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddHours(-_saveInterval.Hours) && !_isMonitorServiceReportSent)
+            if (_monitorDataSaveStateChanges.LastOrDefault() < DateTime.UtcNow.AddHours(-_dataSaveInterval.TotalHours) && !_isMonitorDataSaveReportSent)
             {
                 //alert MonitorService not changing state
                 result.Success = false;
-                var timeSpan = DateTime.UtcNow - _monitorServiceStateChanges.LastOrDefault();
-                result.Message += "Failed : MonitorSerivce has not changed state for " + timeSpan.TotalHours + " h ";
-                _isMonitorServiceReportSent = true;
+                var timeSpan = DateTime.UtcNow - _monitorDataSaveStateChanges.LastOrDefault();
+                result.Message += "Failed : DataSave has not changed state for " + timeSpan.TotalHours + " h ";
+                _isMonitorDataSaveReportSent = true;
             }
-            if (_monitorDataStateChanges.LastOrDefault() < DateTime.UtcNow.AddHours(-_dataPurgeInterval.Hours) && !_isMonitorDataReportSent)
+            if (_monitorDataPurgeStateChanges.LastOrDefault() < DateTime.UtcNow.AddHours(-_dataPurgeInterval.TotalHours) && !_isMonitorDataPurgeReportSent)
             {
                 //alert MonitorData not changing state
                 result.Success = false;
-                var timeSpan = DateTime.UtcNow - _monitorDataStateChanges.LastOrDefault();
-                result.Message += "Failed : MonitorData has not changed state for " + timeSpan.TotalHours + " h ";
-                _isMonitorDataReportSent = true;
+                var timeSpan = DateTime.UtcNow - _monitorDataPurgeStateChanges.LastOrDefault();
+                result.Message += "Failed : MonitorPurge has not changed state for " + timeSpan.TotalHours + " h ";
+                _isMonitorDataPurgeReportSent = true;
             }
-            if (_alertServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_alertInterval.Minutes*2) && !_isAlertServiceReportSent)
+            if (_alertServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_alertInterval.TotalMinutes * 2) && !_isAlertServiceReportSent)
             {
                 //alert MonitorService not changing state
                 result.Success = false;
@@ -332,7 +367,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += "Failed : AlertSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
                 _isAlertServiceReportSent = true;
             }
-            if (_monitorCheckServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_monitorCheckInterval.Minutes*2) && !_isMonitorCheckServiceReportSent)
+            if (_monitorCheckServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_monitorCheckInterval.TotalMinutes * 2) && !_isMonitorCheckServiceReportSent)
             {
                 //alert MonitorService not changing state
                 result.Success = false;
@@ -340,7 +375,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += "Failed : MonitorCheck has not changed state for " + timeSpan.TotalMinutes + " m ";
                 _isMonitorCheckServiceReportSent = true;
             }
-             if (_monitorCheckDataStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_dataCheckInterval.Minutes*2) && !_isMonitorCheckDataReportSent)
+            if (_monitorCheckDataStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_dataCheckInterval.TotalMinutes * 2) && !_isMonitorCheckDataReportSent)
             {
                 //alert MonitorData not changing state
                 result.Success = false;
@@ -348,7 +383,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += "Failed : DataCheck has not changed state for " + timeSpan.TotalMinutes + " m ";
                 _isMonitorCheckDataReportSent = true;
             }
-            if (_paymentServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_paymentInterval.Minutes*2) && !_isPaymentServiceReportSent)
+            if (_paymentServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_paymentInterval.TotalMinutes * 2) && !_isPaymentServiceReportSent)
             {
                 //payment MonitorService not changing state
                 result.Success = false;
@@ -358,7 +393,7 @@ namespace NetworkMonitor.Scheduler.Services
             }
             foreach (var procInst in _processorInstances)
             {
-                if (_processorStateChanges[procInst.ID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-_pingScheduleInterval.Minutes*2) && !procInst.IsReportSent)
+                if (_processorStateChanges[procInst.ID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-_pingScheduleInterval.TotalMinutes * 2) && !procInst.IsReportSent)
                 {
                     //alert MonitorService not changing state
                     result.Success = false;
