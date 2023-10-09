@@ -11,14 +11,14 @@ using MetroLog;
 using System.Collections.Generic;
 namespace NetworkMonitor.Scheduler
 {
-    public class DataCheckScheduleTask: ScheduledProcessor
+    public class DataCheckScheduleTask : ScheduledProcessor
     {
         private bool firstRun;
         private ILogger _logger;
         public DataCheckScheduleTask(INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             firstRun = true;
-             _logger = loggerFactory.GetLogger("DataCheckScheduleTask");
+            _logger = loggerFactory.GetLogger("DataCheckScheduleTask");
             string scheduleStr = config.GetValue<string>("DataCheckSchedule");
             updateSchedule(scheduleStr);
         }
@@ -29,17 +29,22 @@ namespace NetworkMonitor.Scheduler
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
             {
-                        if (serviceState.IsMonitorCheckDataReady)
-                        {
-                            serviceState.RabbitRepo.Publish( "dataCheck", null );
-                            _logger.Info("Sent dataCheck event ");
-                            serviceState.IsMonitorCheckDataReady = false;
-                        }
-                        else
-                        {
-                            serviceState.RabbitRepo.Publish("dataCheck",null );
-                            _logger.Warn("DataCheck Service has not signalled it is ready sent dataCheck");
-                        }
+
+                if (!serviceState.IsMonitorCheckDataReady)
+                {
+                     _logger.Warn("DataCheck Service has not signalled it is ready sent dataCheck");
+                
+                }
+                    var serviceObj = new MonitorDataInitObj()
+                    {
+                        IsDataReady = true,
+                        IsDataMessage=true
+                    };
+                    serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataCheck", serviceObj);
+
+                    _logger.Info("Sent dataCheck event ");
+                    serviceState.IsMonitorCheckDataReady = false;
+              
             }
             catch (Exception e)
             {

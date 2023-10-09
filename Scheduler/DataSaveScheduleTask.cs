@@ -8,15 +8,16 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using MetroLog;
 using NetworkMonitor.BackgroundService;
+using NetworkMonitor.Objects.ServiceMessage;
 namespace NetworkMonitor.Scheduler
 {
-    public class SaveScheduleTask : ScheduledProcessor
+    public class DataSaveScheduleTask : ScheduledProcessor
     {
         private ILogger _logger;
-        public SaveScheduleTask( INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
+        public DataSaveScheduleTask( INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-              _logger = loggerFactory.GetLogger("SaveScheduleTask");
-            string scheduleStr = config.GetValue<string>("SaveSchedule");
+              _logger = loggerFactory.GetLogger("DataSaveScheduleTask");
+            string scheduleStr = config.GetValue<string>("DataSaveSchedule");
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
@@ -26,16 +27,20 @@ namespace NetworkMonitor.Scheduler
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
-                    if (serviceState.IsMonitorServiceReady)
+                    if (serviceState.IsMonitorDataSaveReady)
                     {
-                        serviceState.RabbitRepo.Publish( "monitorSaveData", null);
-                        _logger.Info("Sent monitorSaveData event.");
-                        serviceState.IsMonitorServiceReady = false;
+                        serviceState.RabbitRepo.Publish( "saveData", null);
+                        _logger.Info("Sent saveData event.");
+                        serviceState.IsMonitorDataSaveReady = false;
                     }
                     else
                     {
-                        serviceState.RabbitRepo.Publish("serviceWakeUp", null);
-                        _logger.Warn("MonitorService has not signalled it is ready");
+                        var serviceObj=new MonitorDataInitObj(){
+                            IsDataSaveReady=true,
+                            IsDataSaveMessage=true
+                        };
+                        serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataWakeUp", serviceObj);
+                        _logger.Warn("DataSave has not signalled it is ready");
                     }
             }
             catch (Exception e)
