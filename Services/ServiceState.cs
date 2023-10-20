@@ -6,7 +6,7 @@ using System.Threading;
 using Microsoft.Extensions.Configuration;
 using NetworkMonitor.Objects;
 using MailKit.Net.Smtp;
-using MetroLog;
+using Microsoft.Extensions.Logging;
 using MimeKit;
 using NetworkMonitor.Utils.Helpers;
 using NetworkMonitor.Objects.Factory;
@@ -74,10 +74,10 @@ namespace NetworkMonitor.Scheduler.Services
         private TimeSpan _dataPurgeInterval;
 
         public IRabbitRepo RabbitRepo { get => _rabbitRepo; }
-        public ServiceState(INetLoggerFactory loggerFactory, IConfiguration config, CancellationTokenSource cancellationTokenSource, IRabbitRepo rabbitRepo, ISystemParamsHelper systemParamsHelper)
+        public ServiceState(ILogger<ServiceState> logger, IConfiguration config, CancellationTokenSource cancellationTokenSource, IRabbitRepo rabbitRepo, ISystemParamsHelper systemParamsHelper)
         {
             _config = config;
-            _logger = loggerFactory.GetLogger("ServiceState");
+            _logger = logger;
             _rabbitRepo = rabbitRepo;
             _token = cancellationTokenSource.Token;
             _token.Register(() => OnStopping());
@@ -98,7 +98,7 @@ namespace NetworkMonitor.Scheduler.Services
                 procInst.IsReportSent = false;
                 _processorInstances.Add(procInst);
                 _processorStateChanges.Add(procInst.ID, new List<DateTime>());
-                _logger.Info(" Success : added Processor AppID " + processorObj.AppID);
+                _logger.LogInformation(" Success : added Processor AppID " + processorObj.AppID);
             }
             foreach (KeyValuePair<string, List<DateTime>> entry in _processorStateChanges)
             {
@@ -119,7 +119,7 @@ namespace NetworkMonitor.Scheduler.Services
             }
             catch (Exception e)
             {
-                _logger.Error(" Could setup health check parameteres : " + e.ToString() + " . ");
+                _logger.LogError(" Could setup health check parameteres : " + e.ToString() + " . ");
             }
 
 
@@ -146,12 +146,12 @@ namespace NetworkMonitor.Scheduler.Services
             {
                 result.Message += " Nothing to do. ";
                 result.Success = true;
-                _logger.Info(result.Message);
-                _logger.Warn("SERVICE SHUTDOWN : Complete : ");
+                _logger.LogInformation(result.Message);
+                _logger.LogWarning("SERVICE SHUTDOWN : Complete : ");
             }
             catch (Exception e)
             {
-                _logger.Fatal("Error : Failed to run OnStopping during shutdown : Error Was : " + e.Message);
+                _logger.LogCritical("Error : Failed to run OnStopping during shutdown : Error Was : " + e.Message);
             }
         }
         public Task Init()
@@ -322,13 +322,13 @@ namespace NetworkMonitor.Scheduler.Services
                 client.Dispose();
                 result.Message = "Email with subject " + alertMessage.Subject + " sent ok";
                 result.Success = true;
-                _logger.Info(result.Message);
+                _logger.LogInformation(result.Message);
             }
             catch (Exception e)
             {
                 result.Message = "Email with subject " + alertMessage.Subject + " failed to send . Error was :" + e.Message.ToString();
                 result.Success = false;
-                _logger.Error(result.Message);
+                _logger.LogError(result.Message);
             }
             return result;
         }

@@ -7,7 +7,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using MetroLog;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 namespace NetworkMonitor.Scheduler
 {
@@ -15,16 +15,16 @@ namespace NetworkMonitor.Scheduler
     {
         private bool firstRun;
         private ILogger _logger;
-        public MonitorCheckScheduleTask(INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
+        public MonitorCheckScheduleTask(ILogger<MonitorCheckScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             firstRun = true;
-             _logger = loggerFactory.GetLogger("MonitorCheckScheduleTask");
+             _logger = logger;
             string scheduleStr = config.GetValue<string>("MonitorCheckSchedule");
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.Info("SCHEDULE : Starting MonitorCheck schedule ");
+            _logger.LogInformation("SCHEDULE : Starting MonitorCheck schedule ");
             IServiceState serviceState = serviceProvider.GetService<IServiceState>();
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
@@ -32,18 +32,18 @@ namespace NetworkMonitor.Scheduler
                         if (serviceState.IsMonitorCheckServiceReady)
                         {
                             serviceState.RabbitRepo.Publish( "monitorCheck", null );
-                            _logger.Info("Sent monitorCheck event ");
+                            _logger.LogInformation("Sent monitorCheck event ");
                             serviceState.IsMonitorCheckServiceReady = false;
                         }
                         else
                         {
                             serviceState.RabbitRepo.Publish("monitorCheck",null );
-                            _logger.Warn("MonitorCheck Service has not signalled it is ready sent monitorCheck");
+                            _logger.LogWarning("MonitorCheck Service has not signalled it is ready sent monitorCheck");
                         }
             }
             catch (Exception e)
             {
-                _logger.Error("Error : occured in MonitorCheckScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                _logger.LogError("Error : occured in MonitorCheckScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;

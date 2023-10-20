@@ -7,7 +7,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using MetroLog;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 namespace NetworkMonitor.Scheduler
 {
@@ -15,16 +15,16 @@ namespace NetworkMonitor.Scheduler
     {
         private bool firstRun;
         private ILogger _logger;
-        public PingScheduleTask(INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
+        public PingScheduleTask(ILogger<PingScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             firstRun = true;
-            _logger = loggerFactory.GetLogger("PingScheduleTask");
+            _logger = logger;
             string scheduleStr = config.GetValue<string>("PingSchedule");
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.Info("SCHEDULE : Starting Ping schedule ");
+            _logger.LogInformation("SCHEDULE : Starting Ping schedule ");
             IServiceState serviceState = serviceProvider.GetService<IServiceState>();
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
@@ -36,19 +36,19 @@ namespace NetworkMonitor.Scheduler
                     if (procInst.IsReady)
                     {
                         serviceState.RabbitRepo.Publish<ProcessorConnectObj>("processorConnect" + procInst.ID, connectObj);
-                        _logger.Info("Sent processorConnect event for appID " + procInst.ID);
+                        _logger.LogInformation("Sent processorConnect event for appID " + procInst.ID);
                         procInst.IsReady = false;
                     }
                     else
                     {
                         serviceState.RabbitRepo.Publish("processorWakeUp" + procInst.ID,null);
-                        _logger.Warn("Processor " + procInst.ID + " has not signalled it is ready");
+                        _logger.LogWarning("Processor " + procInst.ID + " has not signalled it is ready");
                     }
                 }
             }
             catch (Exception e)
             {
-                _logger.Error("Error : occured in PingScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                _logger.LogError("Error : occured in PingScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;

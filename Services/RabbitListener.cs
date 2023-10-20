@@ -3,14 +3,15 @@ using RabbitMQ.Client.Events;
 using NetworkMonitor.Objects.ServiceMessage;
 using NetworkMonitor.Objects;
 using Microsoft.AspNetCore.Mvc;
-using MetroLog;
+using Microsoft.Extensions.Logging;
 using NetworkMonitor.Scheduler.Services;
+using NetworkMonitor.Objects.Repository;
 using System;
 using System.Threading.Tasks;
 using NetworkMonitor.Objects.Factory;
 using NetworkMonitor.Utils.Helpers;
 
-namespace NetworkMonitor.Objects.Repository
+namespace NetworkMonitor.Scheduler.Services
 {
       public interface IRabbitListener
     {
@@ -23,18 +24,14 @@ namespace NetworkMonitor.Objects.Repository
     public class RabbitListener : RabbitListenerBase, IRabbitListener
     {
         private IServiceState _serviceState;
-        public RabbitListener( IServiceState serviceState, INetLoggerFactory loggerFactory, ISystemParamsHelper systemParamsHelper) : base(DeriveLogger(loggerFactory), DeriveSystemUrl(systemParamsHelper))
+        public RabbitListener( IServiceState serviceState, ILogger<RabbitListenerBase> logger, ISystemParamsHelper systemParamsHelper) : base(logger, DeriveSystemUrl(systemParamsHelper))
        
         {
             _serviceState=serviceState;
 	    Setup();
            }
 
-            private static ILogger DeriveLogger(INetLoggerFactory loggerFactory)
-        {
-            return loggerFactory.GetLogger("RabbitListener"); 
-        }
-
+         
         private static SystemUrl DeriveSystemUrl(ISystemParamsHelper systemParamsHelper)
         {
             return systemParamsHelper.GetSystemParams().ThisSystemUrl;
@@ -92,7 +89,7 @@ namespace NetworkMonitor.Objects.Repository
                         }
                          catch (Exception ex)
                         {
-                            _logger.Error(" Error : RabbitListener.DeclareConsumers.processorReady " + ex.Message);
+                            _logger.LogError(" Error : RabbitListener.DeclareConsumers.processorReady " + ex.Message);
                         }
                      
                     };
@@ -107,7 +104,7 @@ namespace NetworkMonitor.Objects.Repository
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error(" Error : RabbitListener.DeclareConsumers.paymentServiceReady " + ex.Message);
+                            _logger.LogError(" Error : RabbitListener.DeclareConsumers.paymentServiceReady " + ex.Message);
                         }
                       
                     };
@@ -122,7 +119,7 @@ namespace NetworkMonitor.Objects.Repository
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error(" Error : RabbitListener.DeclareConsumers.alertServiceReady " + ex.Message);
+                            _logger.LogError(" Error : RabbitListener.DeclareConsumers.alertServiceReady " + ex.Message);
                         }
                       
                     };
@@ -137,7 +134,7 @@ namespace NetworkMonitor.Objects.Repository
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
+                            _logger.LogError(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
                         }
                        
                     };
@@ -152,7 +149,7 @@ namespace NetworkMonitor.Objects.Repository
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
+                            _logger.LogError(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
                         }
                        
                     };
@@ -188,7 +185,7 @@ namespace NetworkMonitor.Objects.Repository
                 result.Message+=resultProcesoor.Message;
                 result.Success=resultProcesoor.Success;
 
-                _logger.Info(result.Message);
+                _logger.LogInformation(result.Message);
             }
             catch (Exception e)
             {
@@ -196,7 +193,7 @@ namespace NetworkMonitor.Objects.Repository
                 result.Data = null;
                 result.Success = false;
                 result.Message += "Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ");
+                _logger.LogError("Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ");
             }
             return result;
 
@@ -212,14 +209,14 @@ namespace NetworkMonitor.Objects.Repository
                 _serviceState.IsPaymentServiceReady= paymentObj.IsPaymentServiceReady;
                 result.Message += "Success set PaymentServiceReady to " + paymentObj.IsPaymentServiceReady;
                 result.Success = true;
-                _logger.Info(result.Message);
+                _logger.LogInformation(result.Message);
             }
             catch (Exception e)
             {
                 result.Data = null;
                 result.Success = false;
                 result.Message += "Error : Failed to set PaymentServiceReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set PaymentServiceReady : Error was : " + e.Message + " ");
+                _logger.LogError("Error : Failed to set PaymentServiceReady : Error was : " + e.Message + " ");
             }
             return result;
 
@@ -237,14 +234,14 @@ namespace NetworkMonitor.Objects.Repository
                 _serviceState.IsAlertServiceReady = alertObj.IsAlertServiceReady;
                 result.Message += "Success set AlertServiceReady to " + alertObj.IsAlertServiceReady;
                 result.Success = true;
-                _logger.Info(result.Message);
+                _logger.LogInformation(result.Message);
             }
             catch (Exception e)
             {
                 result.Data = null;
                 result.Success = false;
                 result.Message += "Error : Failed to set AlertServiceReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set AlertServiceReady : Error was : " + e.Message + " ");
+                _logger.LogError("Error : Failed to set AlertServiceReady : Error was : " + e.Message + " ");
             }
             return result;
 
@@ -261,14 +258,14 @@ namespace NetworkMonitor.Objects.Repository
                 _serviceState.IsMonitorCheckServiceReady = serviceObj.IsServiceReady;
                 result.Message += "Success set MonitorServiceReady to " + serviceObj.IsServiceReady;
                 result.Success = true;
-                _logger.Info(result.Message);
+                _logger.LogInformation(result.Message);
             }
             catch (Exception e)
             {
                 result.Data = null;
                 result.Success = false;
                 result.Message += "Error : Failed to set MonitorServiceReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set MonitorServiceReady : Error was : " + e.Message + " ");
+                _logger.LogError("Error : Failed to set MonitorServiceReady : Error was : " + e.Message + " ");
             }
             return result;
 
@@ -299,14 +296,14 @@ namespace NetworkMonitor.Objects.Repository
                
                 result.Message += "Success set monitorDataReady " + message;
                 result.Success = true;
-                _logger.Info(result.Message);
+                _logger.LogInformation(result.Message);
             }
             catch (Exception e)
             {
                 result.Data = null;
                 result.Success = false;
                 result.Message += "Error : Failed to set MonitorDataReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set MonitorDataReady : Error was : " + e.Message + " ");
+                _logger.LogError("Error : Failed to set MonitorDataReady : Error was : " + e.Message + " ");
             }
             return result;
 
