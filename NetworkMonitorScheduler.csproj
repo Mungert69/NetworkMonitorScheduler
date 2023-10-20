@@ -9,7 +9,9 @@
     <ContainerImageTag>1.4.0</ContainerImageTag>
 </PropertyGroup>
 
-
+<PropertyGroup>
+    <Nullable>enable</Nullable>
+</PropertyGroup>
   <ItemGroup>
     <Compile Remove="Models\**" />
     <Content Remove="Models\**" />
