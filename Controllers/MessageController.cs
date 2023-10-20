@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using MetroLog;
+using Microsoft.Extensions.Logging;
 using NetworkMonitor.Objects;
 using NetworkMonitor.Objects.ServiceMessage;
 using NetworkMonitor.Scheduler.Services;
@@ -19,9 +19,9 @@ namespace NetworkMonitor.Scheduler.Controllers
         private readonly ILogger _logger;
         private IServiceState _serviceState;
 
-        public MessageController(INetLoggerFactory loggerFactory, IServiceState serviceState)
+        public MessageController(ILogger<MessageController> logger, IServiceState serviceState)
         {
-            _logger = loggerFactory.GetLogger("MessageController");
+            _logger = logger;
             _serviceState=serviceState;
           
         }
@@ -37,7 +37,7 @@ namespace NetworkMonitor.Scheduler.Controllers
             {
                
                 result=_serviceState.ResetReportSent();
-                _logger.Info(result.Message);
+                _logger.LogInformation(result.Message);
             }
             catch (Exception e)
             {
@@ -45,7 +45,7 @@ namespace NetworkMonitor.Scheduler.Controllers
                 result.Data = null;
                 result.Success = false;
                 result.Message += "Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ";
-                _logger.Error("Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ");
+                _logger.LogError("Error : Failed to set Is ProcessorrReady : Error was : " + e.Message + " ");
             }
             return result;
 

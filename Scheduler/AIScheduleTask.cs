@@ -7,33 +7,33 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using MetroLog;
+using Microsoft.Extensions.Logging;
 
 namespace NetworkMonitor.Scheduler
 {
     public class AIScheduleTask : ScheduledProcessor
     {
         private ILogger _logger;
-        public AIScheduleTask(INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
+        public AIScheduleTask(ILogger<AIScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
 
-            _logger = loggerFactory.GetLogger("AISchedulerTask");
+            _logger = logger;
             string scheduleStr = config.GetValue<string>("AISchedule");
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.Info("SCHEDULE : Starting AI schedule ");
+            _logger.LogInformation("SCHEDULE : Starting AI schedule ");
             IServiceState serviceState = serviceProvider.GetService<IServiceState>();
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
             {
                 serviceState.RabbitRepo.Publish("processBlogList", null);
-                _logger.Info("Sent processBlogList event ");
+                _logger.LogInformation("Sent processBlogList event ");
             }
             catch (Exception e)
             {
-                _logger.Error("Error : occured in AIScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                _logger.LogError("Error : occured in AIScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;

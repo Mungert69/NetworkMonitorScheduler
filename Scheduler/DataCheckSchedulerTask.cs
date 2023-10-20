@@ -7,7 +7,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using MetroLog;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 namespace NetworkMonitor.Scheduler
 {
@@ -15,16 +15,16 @@ namespace NetworkMonitor.Scheduler
     {
         private bool firstRun;
         private ILogger _logger;
-        public DataCheckScheduleTask(INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
+        public DataCheckScheduleTask(ILogger<DataCheckScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             firstRun = true;
-            _logger = loggerFactory.GetLogger("DataCheckScheduleTask");
+            _logger = logger;
             string scheduleStr = config.GetValue<string>("DataCheckSchedule");
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.Info("SCHEDULE : Starting DataCheck schedule ");
+            _logger.LogInformation("SCHEDULE : Starting DataCheck schedule ");
             IServiceState serviceState = serviceProvider.GetService<IServiceState>();
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
@@ -32,7 +32,7 @@ namespace NetworkMonitor.Scheduler
 
                 if (!serviceState.IsMonitorCheckDataReady)
                 {
-                     _logger.Warn("DataCheck Service has not signalled it is ready sent dataCheck");
+                     _logger.LogWarning("DataCheck Service has not signalled it is ready sent dataCheck");
                 
                 }
                 else {
@@ -45,13 +45,13 @@ namespace NetworkMonitor.Scheduler
                     };
                     serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataCheck", serviceObj);
 
-                    _logger.Info("Sent dataCheck event ");
+                    _logger.LogInformation("Sent dataCheck event ");
     
               
             }
             catch (Exception e)
             {
-                _logger.Error("Error : occured in DataCheckScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                _logger.LogError("Error : occured in DataCheckScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;

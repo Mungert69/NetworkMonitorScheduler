@@ -8,7 +8,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using MetroLog;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 
 namespace NetworkMonitor.Scheduler
@@ -18,17 +18,17 @@ namespace NetworkMonitor.Scheduler
         private bool _firstRun;
         private ILogger _logger;
 
-        public HealthCheckScheduleTask( INetLoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
+        public HealthCheckScheduleTask( ILogger<HealthCheckScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
 
-             _logger = loggerFactory.GetLogger("HealthCheckScheduleTask");
+             _logger = logger;
             _firstRun=true;
             string scheduleStr = config.GetValue<string>("PingSchedule");
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.Info("SCHEDULE : Starting Health Check schedule ");
+            _logger.LogInformation("SCHEDULE : Starting Health Check schedule ");
             if (_firstRun) {
                 _firstRun=false;
                 return Task.CompletedTask;}
@@ -42,21 +42,21 @@ namespace NetworkMonitor.Scheduler
                 if (!result.Success)
                 {
 
-                    _logger.Fatal("Error : Schedule State failed Health Check Message was : " + result.Message);
+                    _logger.LogCritical("Error : Schedule State failed Health Check Message was : " + result.Message);
                     var resultSend = serviceState.SendHealthReport(result.Message);
                     if (resultSend.Success)
                     {
-                        _logger.Info(resultSend.Message);
+                        _logger.LogInformation(resultSend.Message);
                     }
                     else
                     {
-                        _logger.Error("Error : Sending Health Report. Error was : " + resultSend.Message);
+                        _logger.LogError("Error : Sending Health Report. Error was : " + resultSend.Message);
                     }
 
                 }
                 else
                 {
-                    _logger.Info("Success :: --> All Services Healthy <-- ::");
+                    _logger.LogInformation("Success :: --> All Services Healthy <-- ::");
                 }
 
 
@@ -64,7 +64,7 @@ namespace NetworkMonitor.Scheduler
             }
             catch (Exception e)
             {
-                _logger.Error("Error : occured in HealthCheckScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                _logger.LogError("Error : occured in HealthCheckScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;
