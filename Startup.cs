@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +30,10 @@ namespace NetworkMonitor
         public void ConfigureServices(IServiceCollection services)
         {
             _services = services;
+             services.AddLogging(builder =>
+                {
+                    builder.AddConsole();
+                });
             services.AddSingleton<ISystemParamsHelper, SystemParamsHelper>();
             services.AddSingleton<IHostedService, DataSaveScheduleTask>();
             services.AddSingleton<IHostedService, MonitorCheckScheduleTask>();
@@ -46,7 +51,6 @@ namespace NetworkMonitor
             services.AddSingleton(_cancellationTokenSource);
             services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));
             services.AddControllers();
-            services.AddSingleton<INetLoggerFactory, NetLoggerFactory>();
             services.AddAsyncServiceInitialization()
                    .AddInitAction<IServiceState>(async (serviceState) =>
                    {
