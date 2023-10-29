@@ -29,6 +29,7 @@ namespace NetworkMonitor.Scheduler
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
             {
+                
 
                 if (!serviceState.IsMonitorCheckDataReady)
                 {
