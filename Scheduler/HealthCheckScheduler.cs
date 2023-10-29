@@ -17,6 +17,7 @@ namespace NetworkMonitor.Scheduler
     {
         private bool _firstRun;
         private ILogger _logger;
+        private bool _noHealthCheck=false;
 
         public HealthCheckScheduleTask( ILogger<HealthCheckScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
@@ -24,10 +25,15 @@ namespace NetworkMonitor.Scheduler
              _logger = logger;
             _firstRun=true;
             string scheduleStr = config.GetValue<string>("PingSchedule");
+            _noHealthCheck = config.GetValue<bool?>("NoHealthCheck") ?? false;
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
+            if (_noHealthCheck){
+                _logger.LogWarning("SCHEDULE : Warning Health Check is turn off!");
+                return Task.CompletedTask;
+            }
             _logger.LogInformation("SCHEDULE : Starting Health Check schedule ");
             if (_firstRun) {
                 _firstRun=false;
