@@ -17,20 +17,21 @@ namespace NetworkMonitor.Scheduler
         public DataSaveScheduleTask( ILogger<DataSaveScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
               _logger = logger;
-            string scheduleStr = config.GetValue<string>("DataSaveSchedule");
+            string scheduleStr = config.GetValue<string>("DataSaveSchedule") ?? "0 */6 * * *" ;
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.LogInformation("SCHEDULE  : Starting Save schedule ");
-            IServiceState serviceState = serviceProvider.GetService<IServiceState>();
+            string message=" SCHEDULE  : Starting Save schedule  . ";
+            IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
                     if (serviceState.IsMonitorDataSaveReady)
                     {
                         serviceState.RabbitRepo.Publish( "saveData", null);
-                        _logger.LogInformation("Sent saveData event.");
+                        message+=" Success : Sent saveData event.";
+                        _logger.LogInformation(message);
                         serviceState.IsMonitorDataSaveReady = false;
                     }
                     else
@@ -40,14 +41,15 @@ namespace NetworkMonitor.Scheduler
                             IsDataSaveMessage=true
                         };
                         serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataCheck", serviceObj);
-                        _logger.LogWarning("DataSave has not signalled it is ready");
+                        message+=" Warning : DataSave has not signalled it is ready. Sent dataCheck event .";
+                        _logger.LogWarning(message);
                     }
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in SaveScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                message+=" Error : occured in SaveScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString();
+                _logger.LogError(message);
             }
-            Console.WriteLine("ScheduleService : Saving data processing ends here");
             return Task.CompletedTask;
         }
     }

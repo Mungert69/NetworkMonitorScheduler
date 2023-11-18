@@ -41,7 +41,8 @@ namespace NetworkMonitor
             services.AddSingleton<IHostedService, PingScheduleTask>();
             services.AddSingleton<IHostedService, PaymentScheduleTask>();
             services.AddSingleton<IHostedService, DataCheckScheduleTask>();
-                    services.AddSingleton<IHostedService, DataPurgeScheduleTask>();
+            services.AddSingleton<IHostedService, DataPurgeScheduleTask>();
+            services.AddSingleton<IHostedService,  ReportScheduleTask>();
             services.AddSingleton<IHostedService, HealthCheckScheduleTask>();
             services.AddSingleton<IHostedService, ResetScheduleTask>();
             services.AddSingleton<IHostedService, AIScheduleTask>();

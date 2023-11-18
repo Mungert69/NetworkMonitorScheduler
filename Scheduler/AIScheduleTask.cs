@@ -18,22 +18,24 @@ namespace NetworkMonitor.Scheduler
         {
 
             _logger = logger;
-            string scheduleStr = config.GetValue<string>("AISchedule");
+            string scheduleStr = config.GetValue<string>("AISchedule") ?? "5 0 * * *";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.LogInformation("SCHEDULE : Starting AI schedule ");
-            IServiceState serviceState = serviceProvider.GetService<IServiceState>();
+            string message=" SCHEDULE : Starting AI schedule . ";
+            IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
             {
                 serviceState.RabbitRepo.Publish("processBlogList", null);
-                _logger.LogInformation("Sent processBlogList event ");
+                message+=" Success : Sent processBlogList event ";
+                _logger.LogInformation(message);
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in AIScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                message+="Error : occured in AIScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString();
+                _logger.LogError(message);
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;

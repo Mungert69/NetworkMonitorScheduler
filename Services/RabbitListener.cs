@@ -13,7 +13,7 @@ using NetworkMonitor.Utils.Helpers;
 
 namespace NetworkMonitor.Scheduler.Services
 {
-      public interface IRabbitListener
+    public interface IRabbitListener
     {
         ResultObj ProcessorReady(ProcessorInitObj processorObj);
         ResultObj PaymentServiceReady(PaymentServiceInitObj paymentObj);
@@ -24,14 +24,14 @@ namespace NetworkMonitor.Scheduler.Services
     public class RabbitListener : RabbitListenerBase, IRabbitListener
     {
         private IServiceState _serviceState;
-        public RabbitListener( IServiceState serviceState, ILogger<RabbitListenerBase> logger, ISystemParamsHelper systemParamsHelper) : base(logger, DeriveSystemUrl(systemParamsHelper))
-       
-        {
-            _serviceState=serviceState;
-	    Setup();
-           }
+        public RabbitListener(IServiceState serviceState, ILogger<RabbitListenerBase> logger, ISystemParamsHelper systemParamsHelper) : base(logger, DeriveSystemUrl(systemParamsHelper))
 
-         
+        {
+            _serviceState = serviceState;
+            Setup();
+        }
+
+
         private static SystemUrl DeriveSystemUrl(ISystemParamsHelper systemParamsHelper)
         {
             return systemParamsHelper.GetSystemParams().ThisSystemUrl;
@@ -60,14 +60,14 @@ namespace NetworkMonitor.Scheduler.Services
                 FuncName = "monitorServiceReady",
                 MessageTimeout = 60000
             });
-           
-             _rabbitMQObjs.Add(new RabbitMQObj()
+
+            _rabbitMQObjs.Add(new RabbitMQObj()
             {
                 ExchangeName = "monitorDataReady",
                 FuncName = "monitorDataReady",
                 MessageTimeout = 60000
             });
-           
+
         }
         protected override ResultObj DeclareConsumers()
         {
@@ -77,84 +77,92 @@ namespace NetworkMonitor.Scheduler.Services
                 _rabbitMQObjs.ForEach(rabbitMQObj =>
             {
                 rabbitMQObj.Consumer = new EventingBasicConsumer(rabbitMQObj.ConnectChannel);
-                switch (rabbitMQObj.FuncName)
+                if (rabbitMQObj.ConnectChannel != null)
                 {
-                    case "processorReady":
-                        rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                        rabbitMQObj.Consumer.Received += (model, ea) =>
+                    switch (rabbitMQObj.FuncName)
                     {
-                        try {
-                               result = ProcessorReady(ConvertToObject<ProcessorInitObj>(model, ea));
-                        rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
-                        }
-                         catch (Exception ex)
+                        case "processorReady":
+                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.Received += (model, ea) =>
                         {
-                            _logger.LogError(" Error : RabbitListener.DeclareConsumers.processorReady " + ex.Message);
-                        }
-                     
-                    };
-                        break;
-                    case "paymentServiceReady":
-                        rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                        rabbitMQObj.Consumer.Received += (model, ea) =>
-                    {
-                        try {
-                              result = PaymentServiceReady(ConvertToObject<PaymentServiceInitObj>(model, ea));
-                        rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
-                        }
-                        catch (Exception ex)
+                            try
+                            {
+                                result = ProcessorReady(ConvertToObject<ProcessorInitObj>(model, ea));
+                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.processorReady " + ex.Message);
+                            }
+
+                        };
+                            break;
+                        case "paymentServiceReady":
+                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.Received += (model, ea) =>
                         {
-                            _logger.LogError(" Error : RabbitListener.DeclareConsumers.paymentServiceReady " + ex.Message);
-                        }
-                      
-                    };
-                        break;
-                    case "alertServiceReady":
-                        rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                        rabbitMQObj.Consumer.Received += (model, ea) =>
-                    {
-                        try {
-                              result = AlertServiceReady(ConvertToObject<AlertServiceInitObj>(model, ea));
-                        rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
-                        }
-                        catch (Exception ex)
+                            try
+                            {
+                                result = PaymentServiceReady(ConvertToObject<PaymentServiceInitObj>(model, ea));
+                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.paymentServiceReady " + ex.Message);
+                            }
+
+                        };
+                            break;
+                        case "alertServiceReady":
+                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.Received += (model, ea) =>
                         {
-                            _logger.LogError(" Error : RabbitListener.DeclareConsumers.alertServiceReady " + ex.Message);
-                        }
-                      
-                    };
-                        break;
-                    case "monitorServiceReady":
-                        rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                        rabbitMQObj.Consumer.Received += (model, ea) =>
-                    {
-                        try {
-                             result = MonitorServiceReady(ConvertToObject<MonitorServiceInitObj>(model, ea));
-                        rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
-                        }
-                        catch (Exception ex)
+                            try
+                            {
+                                result = AlertServiceReady(ConvertToObject<AlertServiceInitObj>(model, ea));
+                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.alertServiceReady " + ex.Message);
+                            }
+
+                        };
+                            break;
+                        case "monitorServiceReady":
+                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.Received += (model, ea) =>
                         {
-                            _logger.LogError(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
-                        }
-                       
-                    };
-                        break;
-                     case "monitorDataReady":
-                        rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                        rabbitMQObj.Consumer.Received += (model, ea) =>
-                    {
-                        try {
-                             result = MonitorDataReady(ConvertToObject<MonitorDataInitObj>(model, ea));
-                        rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
-                        }
-                        catch (Exception ex)
+                            try
+                            {
+                                result = MonitorServiceReady(ConvertToObject<MonitorServiceInitObj>(model, ea));
+                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
+                            }
+
+                        };
+                            break;
+                        case "monitorDataReady":
+                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.Received += (model, ea) =>
                         {
-                            _logger.LogError(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
-                        }
-                       
-                    };
-                        break;
-                 
+                            try
+                            {
+                                result = MonitorDataReady(ConvertToObject<MonitorDataInitObj>(model, ea));
+                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
+                            }
+
+                        };
+                            break;
+
+                    }
                 }
             });
                 result.Success = true;
@@ -169,21 +177,26 @@ namespace NetworkMonitor.Scheduler.Services
             }
             return result;
         }
-   
-          public ResultObj ProcessorReady(ProcessorInitObj processorObj)
+
+        public ResultObj ProcessorReady(ProcessorInitObj? processorObj)
         {
             ResultObj result = new ResultObj();
             result.Success = false;
             result.Message = "MessageAPI : ProcessorrReady : ";
+            if (processorObj==null){
+                result.Success=false;
+                result.Message +=" Error : processorObj is null .";
+                return result;
+            }
 
             try
             {
-                var procInst=new ProcessorInstance();
-                procInst.ID=processorObj.AppID;
-                procInst.IsReady=processorObj.IsProcessorReady;
-                var resultProcesoor=_serviceState.SetProcessorReady( procInst);
-                result.Message+=resultProcesoor.Message;
-                result.Success=resultProcesoor.Success;
+                var procInst = new ProcessorInstance();
+                procInst.ID = processorObj.AppID;
+                procInst.IsReady = processorObj.IsProcessorReady;
+                var resultProcesoor = _serviceState.SetProcessorReady(procInst);
+                result.Message += resultProcesoor.Message;
+                result.Success = resultProcesoor.Success;
 
                 _logger.LogInformation(result.Message);
             }
@@ -198,15 +211,19 @@ namespace NetworkMonitor.Scheduler.Services
             return result;
 
         }
-   public ResultObj PaymentServiceReady( PaymentServiceInitObj paymentObj)
+        public ResultObj PaymentServiceReady(PaymentServiceInitObj? paymentObj)
         {
             ResultObj result = new ResultObj();
             result.Success = false;
             result.Message = "MessageAPI : PaymentServiceReady : ";
-
+            if (paymentObj==null){
+                result.Success=false;
+                result.Message +=" Error :paymentObj is null .";
+                return result;
+            }
             try
             {
-                _serviceState.IsPaymentServiceReady= paymentObj.IsPaymentServiceReady;
+                _serviceState.IsPaymentServiceReady = paymentObj.IsPaymentServiceReady;
                 result.Message += "Success set PaymentServiceReady to " + paymentObj.IsPaymentServiceReady;
                 result.Success = true;
                 _logger.LogInformation(result.Message);
@@ -223,12 +240,16 @@ namespace NetworkMonitor.Scheduler.Services
         }
 
 
-        public ResultObj AlertServiceReady([FromBody] AlertServiceInitObj alertObj)
+        public ResultObj AlertServiceReady([FromBody] AlertServiceInitObj? alertObj)
         {
             ResultObj result = new ResultObj();
             result.Success = false;
             result.Message = "MessageAPI : AlertServiceReady : ";
-
+            if (alertObj==null){
+                result.Success=false;
+                result.Message +=" Error : alertObj is null .";
+                return result;
+            }
             try
             {
                 _serviceState.IsAlertServiceReady = alertObj.IsAlertServiceReady;
@@ -247,12 +268,16 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
-          public ResultObj MonitorServiceReady([FromBody] MonitorServiceInitObj serviceObj)
+        public ResultObj MonitorServiceReady([FromBody] MonitorServiceInitObj? serviceObj)
         {
             ResultObj result = new ResultObj();
             result.Success = false;
             result.Message = "MessageAPI : MonitorServiceReady : ";
-
+            if (serviceObj==null){
+                result.Success=false;
+                result.Message +=" Error : serviceObj is null .";
+                return result;
+            }
             try
             {
                 _serviceState.IsMonitorCheckServiceReady = serviceObj.IsServiceReady;
@@ -271,29 +296,36 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
-    
-    public ResultObj MonitorDataReady([FromBody] MonitorDataInitObj dataObj)
+
+        public ResultObj MonitorDataReady([FromBody] MonitorDataInitObj? dataObj)
         {
             ResultObj result = new ResultObj();
             result.Success = false;
             result.Message = "MessageAPI : MonitorDataReady : ";
-
+            if (dataObj==null){
+                result.Success=false;
+                result.Message +=" Error : dataObj is null .";
+                return result;
+            }
             try
             {
-                string message="";
-                if (dataObj.IsDataMessage){
+                string message = "";
+                if (dataObj.IsDataMessage)
+                {
                     _serviceState.IsMonitorCheckDataReady = dataObj.IsDataReady;
-                    message+=" Data Ready";
+                    message += " Data Ready";
                 }
-                 if (dataObj.IsDataSaveMessage){
+                if (dataObj.IsDataSaveMessage)
+                {
                     _serviceState.IsMonitorDataSaveReady = dataObj.IsDataSaveReady;
-                     message+=" Data Save Ready";
+                    message += " Data Save Ready";
                 }
-                 if (dataObj.IsDataPurgeMessage){
+                if (dataObj.IsDataPurgeMessage)
+                {
                     _serviceState.IsMonitorDataPurgeReady = dataObj.IsDataPurgeReady;
-                     message+=" Data Purge Ready";
+                    message += " Data Purge Ready";
                 }
-               
+
                 result.Message += "Success set monitorDataReady " + message;
                 result.Success = true;
                 _logger.LogInformation(result.Message);
@@ -309,7 +341,7 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
-      
 
-   }
+
+    }
 }

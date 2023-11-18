@@ -17,19 +17,20 @@ namespace NetworkMonitor.Scheduler
         public DataPurgeScheduleTask( ILogger<DataPurgeScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
               _logger = logger;
-            string scheduleStr = config.GetValue<string>("DataPurgeSchedule");
+            string scheduleStr = config.GetValue<string>("DataPurgeSchedule") ?? "0 1 * * 0";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.LogInformation("SCHEDULE  : Starting Data Purge schedule ");
-            IServiceState serviceState = serviceProvider.GetService<IServiceState>();
+            string message=" SCHEDULE  : Starting Data Purge schedule  . ";
+            IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             try
             {
                     if (serviceState.IsMonitorDataPurgeReady)
                     {
                         serviceState.RabbitRepo.Publish( "dataPurge", null);
-                        _logger.LogInformation("Sent purgeData event.");
+                        message+=" Success : Sent purgeData event.";
+                        _logger.LogInformation(message);
                         serviceState.IsMonitorDataPurgeReady = false;
                     }
                     else
@@ -39,14 +40,15 @@ namespace NetworkMonitor.Scheduler
                             IsDataPurgeMessage=true
                         };
                         serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataWakeUp", serviceObj);
-                        _logger.LogWarning("MonitorData has not signalled it is ready");
+                        message+=" Warning : MonitorData has not signalled it is ready. Sent dataWakeUp event. ";
+                        _logger.LogWarning(message);
                     }
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in DataPurgeScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                message+=" Error : occured in DataPurgeScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString();
+                _logger.LogError(message);
             }
-            Console.WriteLine("ScheduleService : Saving data processing ends here");
             return Task.CompletedTask;
         }
     }

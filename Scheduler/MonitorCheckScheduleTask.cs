@@ -19,31 +19,34 @@ namespace NetworkMonitor.Scheduler
         {
             firstRun = true;
              _logger = logger;
-            string scheduleStr = config.GetValue<string>("MonitorCheckSchedule");
+            string scheduleStr = config.GetValue<string>("MonitorCheckSchedule") ?? "* * * * *";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.LogInformation("SCHEDULE : Starting MonitorCheck schedule ");
-            IServiceState serviceState = serviceProvider.GetService<IServiceState>();
+            string message=" SCHEDULE : Starting MonitorCheck schedule . ";
+            IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
             {
                         if (serviceState.IsMonitorCheckServiceReady)
                         {
                             serviceState.RabbitRepo.Publish( "monitorCheck", null );
-                            _logger.LogInformation("Sent monitorCheck event ");
+                            message+=" Success : Sent monitorCheck event . ";
+                            _logger.LogInformation(message);
                             serviceState.IsMonitorCheckServiceReady = false;
                         }
                         else
                         {
                             serviceState.RabbitRepo.Publish("monitorCheck",null );
-                            _logger.LogWarning("MonitorCheck Service has not signalled it is ready sent monitorCheck");
+                           message+=" Warning : MonitorCheck Service has not signalled it is ready sent monitorCheck . ";
+                            _logger.LogWarning(message);
                         }
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in MonitorCheckScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                message+=" Error : Failed to run MonitorCheck schedule  : Error Was : " + e.Message.ToString();
+                _logger.LogError(message);
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;

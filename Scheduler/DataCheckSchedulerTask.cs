@@ -19,42 +19,46 @@ namespace NetworkMonitor.Scheduler
         {
             firstRun = true;
             _logger = logger;
-            string scheduleStr = config.GetValue<string>("DataCheckSchedule");
+            string scheduleStr = config.GetValue<string>("DataCheckSchedule") ?? "* * * * *";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.LogInformation("SCHEDULE : Starting DataCheck schedule ");
-            IServiceState serviceState = serviceProvider.GetService<IServiceState>();
+            string message = " SCHEDULE : Starting DataCheck schedule . ";
+            IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
             {
-                
 
                 if (!serviceState.IsMonitorCheckDataReady)
                 {
-                     _logger.LogWarning("DataCheck Service has not signalled it is ready sent dataCheck");
-                
-                }
-                else {
-                    serviceState.IsMonitorCheckDataReady = false;
-                }
                     var serviceObj = new MonitorDataInitObj()
                     {
                         IsDataReady = true,
-                        IsDataMessage=true
+                        IsDataMessage = true
                     };
                     serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataCheck", serviceObj);
 
-                    _logger.LogInformation("Sent dataCheck event ");
-    
-              
+                    message += " Warning : DataCheck Service has not signalled it is ready . Sent dataCheck ";
+                    _logger.LogWarning(message);
+
+                }
+                else
+                {
+                    message+=" Success : Ran DataCheck schedule . ";
+                    _logger.LogInformation(message);
+                    serviceState.IsMonitorCheckDataReady = false;
+                }
+
+
+
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in DataCheckScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                message+="Error : occured in DataCheckScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString();
+                _logger.LogError(message);
             }
-            //Console.WriteLine("ScheduleService : Ping Processing ends here");
+
             return Task.CompletedTask;
         }
     }

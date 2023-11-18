@@ -17,31 +17,34 @@ namespace NetworkMonitor.Scheduler
         {
             _logger = logger;
             firstRun = true;
-            string scheduleStr = config.GetValue<string>("AlertSchedule");
+            string scheduleStr = config.GetValue<string>("AlertSchedule") ?? "* * * * *";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.LogInformation("SCHEDULE  : Starting Alert schedule ");
-            IServiceState serviceState = serviceProvider.GetService<IServiceState>();
+            string message=" SCHEDULE  : Starting Alert schedule  . ";
+            IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
                 if (serviceState.IsAlertServiceReady)
                 {
                     serviceState.RabbitRepo.Publish("monitorAlert", null);
-                    _logger.LogInformation("Sent monitorAlert event.");
+                    message+=" Success : Sent monitorAlert event. ";
+                    _logger.LogInformation(message);
                     serviceState.IsAlertServiceReady = false;
                 }
                 else
                 {
                     serviceState.RabbitRepo.Publish("serviceWakeUp", null);
-                    _logger.LogWarning("AlertService has not signalled it is ready");
+                    message +=" Warning : AlertService has not signalled it is ready ";
+                    _logger.LogWarning(message);
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in AlertScheduleTask.ProcesInScope() . Error was : " + e.Message.ToString());
+                message+=" Error : occured in AlertScheduleTask.ProcesInScope() . Error was : " + e.Message.ToString();
+                _logger.LogError(message);
             }
             return Task.CompletedTask;
         }
