@@ -15,21 +15,23 @@ namespace NetworkMonitor.Scheduler
         public ResetScheduleTask(ILogger<ResetScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             _logger = logger;
-            string scheduleStr = config.GetValue<string>("ResetSchedule");
+            string scheduleStr = config.GetValue<string>("ResetSchedule") ?? "0 0 * * *";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.LogInformation("SCHEDULE : Starting Reset schedule ");
-            IServiceState serviceState = serviceProvider.GetService<IServiceState>();
+            string message=" SCHEDULE : Starting Reset schedule . ";
+            IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             try
             {
-                serviceState.ResetReportSent();
-                _logger.LogInformation("Success :  Reset Schedule Ran ");
+                serviceState!.ResetReportSent();
+                message+=" Success :  Reset Schedule Ran . ";
+                _logger.LogInformation(message);
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in ResetScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                message+=" Error : Failed to run Reset schedule : Error Was : " + e.Message.ToString();
+                _logger.LogError(message);
             }
             return Task.CompletedTask;
         }

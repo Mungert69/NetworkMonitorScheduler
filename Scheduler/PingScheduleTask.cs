@@ -19,13 +19,13 @@ namespace NetworkMonitor.Scheduler
         {
             firstRun = true;
             _logger = logger;
-            string scheduleStr = config.GetValue<string>("PingSchedule");
+            string scheduleStr = config.GetValue<string>("PingSchedule") ??  "* * * * *";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            _logger.LogInformation("SCHEDULE : Starting Ping schedule ");
-            IServiceState serviceState = serviceProvider.GetService<IServiceState>();
+            string message=" SCHEDULE : Starting Ping schedule . ";
+            IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
@@ -35,20 +35,23 @@ namespace NetworkMonitor.Scheduler
                 {
                     if (procInst.IsReady)
                     {
+                        message+=" Success : Sent processorConnect event for appID " + procInst.ID;
                         serviceState.RabbitRepo.Publish<ProcessorConnectObj>("processorConnect" + procInst.ID, connectObj);
-                        _logger.LogInformation("Sent processorConnect event for appID " + procInst.ID);
+                        _logger.LogInformation(message);
                         procInst.IsReady = false;
                     }
                     else
                     {
                         serviceState.RabbitRepo.Publish("processorWakeUp" + procInst.ID,null);
-                        _logger.LogWarning("Processor " + procInst.ID + " has not signalled it is ready");
+                        message+=" Warning : Processor " + procInst.ID + " has not signalled it is ready . ";
+                        _logger.LogWarning(message);
                     }
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError("Error : occured in PingScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString());
+                message+=" Error : Failed to run Ping schedule : Error Was : " + e.Message.ToString();
+                _logger.LogError(message);
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;

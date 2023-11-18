@@ -108,14 +108,14 @@ namespace NetworkMonitor.Scheduler.Services
 
             try
             {
-                _pingScheduleInterval = GetScheduleInterval(_config["PingSchedule"]);
-                _monitorCheckInterval = GetScheduleInterval(_config["MonitorCheckSchedule"]);
-                _paymentInterval = GetScheduleInterval(_config["PaymentSchedule"]);
-                _dataSaveInterval = GetScheduleInterval(_config["DataSaveSchedule"]);
-                _alertInterval = GetScheduleInterval(_config["AlertSchedule"]);
-                _aIInterval = GetScheduleInterval(_config["AISchedule"]);
-                _dataCheckInterval = GetScheduleInterval(_config["DataCheckSchedule"]);
-                _dataPurgeInterval = GetScheduleInterval(_config["DataPurgeSchedule"]);
+                _pingScheduleInterval = GetScheduleInterval(_config["PingSchedule"] ?? "* * * * *");
+                _monitorCheckInterval = GetScheduleInterval(_config["MonitorCheckSchedule"] ?? "* * * * *");
+                _paymentInterval = GetScheduleInterval(_config["PaymentSchedule"] ?? "* * * * *");
+                _dataSaveInterval = GetScheduleInterval(_config["DataSaveSchedule"] ?? "0 */6 * * *");
+                _alertInterval = GetScheduleInterval(_config["AlertSchedule"] ?? "* * * * *");
+                _aIInterval = GetScheduleInterval(_config["AISchedule"] ?? "5 0 * * *");
+                _dataCheckInterval = GetScheduleInterval(_config["DataCheckSchedule"] ?? "* * * * *");
+                _dataPurgeInterval = GetScheduleInterval(_config["DataPurgeSchedule"] ?? "0 1 * * 0");
             }
             catch (Exception e)
             {
@@ -258,13 +258,20 @@ namespace NetworkMonitor.Scheduler.Services
             var result = new ResultObj();
             try
             {
-               
-                    _processorInstances.FirstOrDefault(f => f.ID == procInst.ID).IsReady = procInst.IsReady;
+                var processorInstance = _processorInstances.FirstOrDefault(f => f.ID == procInst.ID);
+                if (processorInstance != null)
+                {
+                    processorInstance.IsReady = procInst.IsReady;
                     _processorStateChanges[procInst.ID].Add(DateTime.UtcNow);
                     result.Success = true;
-                    result.Message = "Success : Set Processor Ready for AppID " + procInst.ID + " to " + procInst.IsReady;
+                    result.Message = " Success : Set Processor Ready for AppID " + procInst.ID + " to " + procInst.IsReady;
+                }
+                else {
+                     result.Success = false;
+                    result.Message = " Error  : Failed to find Processor with AppID " + procInst.ID;
+            
+                }
 
-               
             }
             catch (Exception e)
             {
@@ -277,13 +284,16 @@ namespace NetworkMonitor.Scheduler.Services
         {
             ResultObj result = new ResultObj();
             var alertMessage = new AlertMessage();
-            alertMessage.Message += "\n\nThis message was sent by the messenger running at " + _systemParams.ThisSystemUrl.ExternalUrl + " (" + _systemParams.PublicIPAddress.ToString() + " Health Report message : " + reportMessage;
-            string emailFrom = _systemParams.SystemEmail;
-            string systemPassword = _systemParams.SystemPassword;
-            string systemUser = _systemParams.SystemUser;
+            var publicIP=_systemParams.PublicIPAddress;
+            string publicIPStr="IP N/A";
+            if (publicIP!=null) publicIP.ToString();
+            alertMessage.Message += "\n\nThis message was sent by the messenger running at " + _systemParams.ThisSystemUrl.ExternalUrl + " (" + publicIPStr + " Health Report message : " + reportMessage;
+            string? emailFrom = _systemParams.SystemEmail;
+            string? systemPassword = _systemParams.SystemPassword;
+            string? systemUser = _systemParams.SystemUser;
             int mailServerPort = _systemParams.MailServerPort;
             bool mailServerUseSSL = _systemParams.MailServerUseSSL;
-            string mailServer = _systemParams.MailServer;
+            string? mailServer = _systemParams.MailServer;
             var userInfo = new UserInfo();
             userInfo.Email = emailFrom;
             userInfo.Email_verified = true;
