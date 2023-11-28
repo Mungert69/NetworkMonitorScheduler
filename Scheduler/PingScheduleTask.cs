@@ -56,7 +56,7 @@ namespace NetworkMonitor.Scheduler
                  
                           }
                         catch (Exception e){
-                            _logger.LogError($" Error could not publish event processorWakeUp {procInst.ID}");
+                            _logger.LogError($" Error could not publish event processorWakeUp {procInst.ID} . Error was : {e.Message}");
 
                         }
                            }
