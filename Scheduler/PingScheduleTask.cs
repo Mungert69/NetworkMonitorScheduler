@@ -36,16 +36,30 @@ namespace NetworkMonitor.Scheduler
                     if (procInst.IsReady)
                     {
                         message+=" Success : Sent processorConnect event for appID " + procInst.ID;
-                        serviceState.RabbitRepo.Publish<ProcessorConnectObj>("processorConnect" + procInst.ID, connectObj);
+                        try {
+                              serviceState.RabbitRepo.Publish<ProcessorConnectObj>("processorConnect" + procInst.ID, connectObj);
                         _logger.LogInformation(message);
+                        }
+                        catch (Exception e){
+                            _logger.LogError($" Error could not publish event processorConnect {procInst.ID}");
+
+                        }
+                      
                         procInst.IsReady = false;
                     }
                     else
                     {
-                        serviceState.RabbitRepo.Publish("processorWakeUp" + procInst.ID,null);
-                        message+=" Warning : Processor " + procInst.ID + " has not signalled it is ready . ";
+                         try {
+                               serviceState.RabbitRepo.Publish("processorWakeUp" + procInst.ID,null);
+                           message+=" Warning : Processor " + procInst.ID + " has not signalled it is ready . ";
                         _logger.LogWarning(message);
-                    }
+                 
+                          }
+                        catch (Exception e){
+                            _logger.LogError($" Error could not publish event processorWakeUp {procInst.ID}");
+
+                        }
+                           }
                 }
             }
             catch (Exception e)
