@@ -5,7 +5,7 @@
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
     <PublishProfile>DefaultContainer</PublishProfile>
     <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:8.0-jammy-amd64</ContainerBaseImage>
-    <ContainerImageName>mungert/networkmonitorscheduler</ContainerImageName>
+    <ContainerRepository>mungert/networkmonitorscheduler</ContainerRepository>
     <ContainerImageTag>1.5.0</ContainerImageTag>
 </PropertyGroup>
 
@@ -23,7 +23,6 @@
 
     <PackageReference Include="HostInitActions" Version="1.2.0" />
     <PackageReference Include="MailKit" Version="4.2.0" />
-   <PackageReference Include="Microsoft.NET.Build.Containers" Version="8.0.0" />
     <PackageReference Include="ncrontab" Version="3.3.3" />
  
    </ItemGroup>
