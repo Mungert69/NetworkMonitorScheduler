@@ -30,7 +30,7 @@ namespace NetworkMonitor.Scheduler.Services
         bool IsMonitorDataSaveReady { get; set; }
         bool IsMonitorCheckDataReady { get; set; }
         bool IsMonitorDataPurgeReady { get; set; }
-        List<ProcessorObj> ProcessorInstances { get; }
+        List<ProcessorObj> EnabledProcessorInstances { get; }
         ResultObj SetProcessorReady(ProcessorObj procInst);
         ResultObj CheckHealth();
         ResultObj SendHealthReport(string reportMessage);
@@ -113,7 +113,7 @@ namespace NetworkMonitor.Scheduler.Services
             //List<ProcessorObj> processorList = new List<ProcessorObj>();
 
             //_config.GetSection("ProcessorList").Bind(processorList);
-            foreach (var processorObj in _processorState.ProcessorList)
+            foreach (var processorObj in _processorState.EnabledProcessorList)
             {
                 processorObj.IsReportSent=false;
                 _processorStateChanges.Add(processorObj.AppID, new List<DateTime>());
@@ -187,7 +187,7 @@ namespace NetworkMonitor.Scheduler.Services
             _isMonitorDataPurgeReportSent = false;
             _isMonitorCheckDataReportSent = false;
             _isPaymentServiceReady = false;
-            _processorState.ProcessorList.ForEach(f =>
+            _processorState.EnabledProcessorList.ForEach(f =>
             {
                 f.IsReportSent = false;
             });
@@ -268,9 +268,9 @@ namespace NetworkMonitor.Scheduler.Services
 
             }
         }
-        public List<ProcessorObj> ProcessorInstances
+        public List<ProcessorObj> EnabledProcessorInstances
         {
-            get => _processorState.ProcessorList;
+            get => _processorState.EnabledProcessorList;
         }
         public ResultObj SetProcessorReady(ProcessorObj procInst)
         {
@@ -414,7 +414,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += "Failed : PaymentSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
                 _isPaymentServiceReportSent = true;
             }
-            foreach (var procInst in _processorState.ProcessorList)
+            foreach (var procInst in _processorState.EnabledProcessorList)
             {
                 if (_processorStateChanges[procInst.AppID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-_pingScheduleInterval.TotalMinutes * 2) && !procInst.IsReportSent)
                 {

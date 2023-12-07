@@ -32,7 +32,7 @@ namespace NetworkMonitor.Scheduler
             {
                  ProcessorConnectObj connectObj = new ProcessorConnectObj();
                 connectObj.NextRunInterval = RunScheduleInterval();
-                foreach (ProcessorObj procInst in serviceState.ProcessorInstances)
+                foreach (ProcessorObj procInst in serviceState.EnabledProcessorInstances)
                 {
                     if (procInst.IsReady)
                     {
