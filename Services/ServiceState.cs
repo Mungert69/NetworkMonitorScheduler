@@ -104,10 +104,14 @@ namespace NetworkMonitor.Scheduler.Services
                 _logger.LogInformation($" Error : Unable to get Processor List from State . Error was : {e.Message}");
 
             }
-            if (processorList == null)
+             if (processorList == null || processorList.Count==0)
             {
 
                 _logger.LogError(" Error : No processors in processor list .");
+                processorList = new List<ProcessorObj>();
+            }
+            else {
+                _logger.LogInformation($" Success : Got {processorList.Count} processors from state . ");
             }
             _processorState.ProcessorList = processorList;
             //List<ProcessorObj> processorList = new List<ProcessorObj>();
