@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NetworkMonitor.Scheduler.Services;
 using NetworkMonitor.Objects.ServiceMessage;
+using NetworkMonitor.Objects;
 using NetworkMonitor.Objects.Factory;
 using NetworkMonitor.BackgroundService;
 using System;
@@ -31,17 +32,17 @@ namespace NetworkMonitor.Scheduler
             {
                  ProcessorConnectObj connectObj = new ProcessorConnectObj();
                 connectObj.NextRunInterval = RunScheduleInterval();
-                foreach (ProcessorInstance procInst in serviceState.ProcessorInstances)
+                foreach (ProcessorObj procInst in serviceState.ProcessorInstances)
                 {
                     if (procInst.IsReady)
                     {
-                        message+=" Success : Sent processorConnect event for appID " + procInst.ID;
+                        message+=" Success : Sent processorConnect event for appID " + procInst.AppID;
                         try {
-                              serviceState.RabbitRepo.Publish<ProcessorConnectObj>("processorConnect" + procInst.ID, connectObj);
+                              serviceState.RabbitRepo.Publish<ProcessorConnectObj>("processorConnect" + procInst.AppID, connectObj);
                         _logger.LogInformation(message);
                         }
                         catch (Exception e){
-                            _logger.LogError($" Error could not publish event processorConnect {procInst.ID}");
+                            _logger.LogError($" Error could not publish event processorConnect {procInst.AppID}");
 
                         }
                       
@@ -50,13 +51,13 @@ namespace NetworkMonitor.Scheduler
                     else
                     {
                          try {
-                               serviceState.RabbitRepo.Publish("processorWakeUp" + procInst.ID,null);
-                           message+=" Warning : Processor " + procInst.ID + " has not signalled it is ready . ";
+                               serviceState.RabbitRepo.Publish("processorWakeUp" + procInst.AppID,null);
+                           message+=" Warning : Processor " + procInst.AppID + " has not signalled it is ready . ";
                         _logger.LogWarning(message);
                  
                           }
                         catch (Exception e){
-                            _logger.LogError($" Error could not publish event processorWakeUp {procInst.ID} . Error was : {e.Message}");
+                            _logger.LogError($" Error could not publish event processorWakeUp {procInst.AppID} . Error was : {e.Message}");
 
                         }
                            }
