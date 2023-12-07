@@ -30,8 +30,8 @@ namespace NetworkMonitor.Scheduler.Services
         bool IsMonitorDataSaveReady { get; set; }
         bool IsMonitorCheckDataReady { get; set; }
         bool IsMonitorDataPurgeReady { get; set; }
-        List<ProcessorInstance> ProcessorInstances { get; }
-        ResultObj SetProcessorReady(ProcessorInstance procInst);
+        List<ProcessorObj> ProcessorInstances { get; }
+        ResultObj SetProcessorReady(ProcessorObj procInst);
         ResultObj CheckHealth();
         ResultObj SendHealthReport(string reportMessage);
         ResultObj ResetReportSent();
@@ -39,7 +39,7 @@ namespace NetworkMonitor.Scheduler.Services
     }
     public class ServiceState : IServiceState
     {
-        private List<ProcessorInstance> _processorInstances = new List<ProcessorInstance>();
+       // private List<ProcessorInstance> _processorInstances = new List<ProcessorInstance>();
         private Dictionary<string, List<DateTime>> _processorStateChanges = new Dictionary<string, List<DateTime>>();
         private List<DateTime> _monitorDataSaveStateChanges = new List<DateTime>();
         private List<DateTime> _monitorCheckServiceStateChanges = new List<DateTime>();
@@ -72,15 +72,19 @@ namespace NetworkMonitor.Scheduler.Services
         private TimeSpan _aIInterval;
         private TimeSpan _dataCheckInterval;
         private TimeSpan _dataPurgeInterval;
+        private IProcessorState _processorState;
+        private IFileRepo _fileRepo;
 
         public IRabbitRepo RabbitRepo { get => _rabbitRepo; }
-        public ServiceState(ILogger<ServiceState> logger, IConfiguration config, CancellationTokenSource cancellationTokenSource, IRabbitRepo rabbitRepo, ISystemParamsHelper systemParamsHelper)
+        public ServiceState(ILogger<ServiceState> logger, IConfiguration config, CancellationTokenSource cancellationTokenSource, IRabbitRepo rabbitRepo, ISystemParamsHelper systemParamsHelper, IProcessorState processorState, IFileRepo fileRepo)
         {
             _config = config;
             _logger = logger;
             _rabbitRepo = rabbitRepo;
+            _fileRepo=fileRepo;
             _token = cancellationTokenSource.Token;
             _token.Register(() => OnStopping());
+            _processorState = processorState;
             _systemParams = systemParamsHelper.GetSystemParams();
             _alertServiceStateChanges.Add(DateTime.UtcNow);
             _paymentServiceStateChanges.Add(DateTime.UtcNow);
@@ -88,16 +92,31 @@ namespace NetworkMonitor.Scheduler.Services
             _monitorCheckServiceStateChanges.Add(DateTime.UtcNow);
             _monitorDataPurgeStateChanges.Add(DateTime.UtcNow);
             _monitorCheckDataStateChanges.Add(DateTime.UtcNow);
-            List<ProcessorObj> processorList = new List<ProcessorObj>();
-
-            _config.GetSection("ProcessorList").Bind(processorList);
-            foreach (var processorObj in processorList)
+            var processorList = new List<ProcessorObj>();
+             try
             {
-                ProcessorInstance procInst = new ProcessorInstance();
-                procInst.ID = processorObj.AppID;
-                procInst.IsReportSent = false;
-                _processorInstances.Add(procInst);
-                _processorStateChanges.Add(procInst.ID, new List<DateTime>());
+                _fileRepo.CheckFileExists("ProcessorList", _logger);
+                processorList = _fileRepo.GetStateJson<List<ProcessorObj>>("ProcessorList");
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogInformation($" Error : Unable to get Processor List from State . Error was : {e.Message}");
+
+            }
+            if (processorList == null)
+            {
+
+                _logger.LogError(" Error : No processors in processor list .");
+            }
+            _processorState.ProcessorList = processorList;
+            //List<ProcessorObj> processorList = new List<ProcessorObj>();
+
+            //_config.GetSection("ProcessorList").Bind(processorList);
+            foreach (var processorObj in _processorState.ProcessorList)
+            {
+                processorObj.IsReportSent=false;
+                _processorStateChanges.Add(processorObj.AppID, new List<DateTime>());
                 _logger.LogInformation(" Success : added Processor AppID " + processorObj.AppID);
             }
             foreach (KeyValuePair<string, List<DateTime>> entry in _processorStateChanges)
@@ -168,7 +187,7 @@ namespace NetworkMonitor.Scheduler.Services
             _isMonitorDataPurgeReportSent = false;
             _isMonitorCheckDataReportSent = false;
             _isPaymentServiceReady = false;
-            _processorInstances.ForEach(f =>
+            _processorState.ProcessorList.ForEach(f =>
             {
                 f.IsReportSent = false;
             });
@@ -249,26 +268,26 @@ namespace NetworkMonitor.Scheduler.Services
 
             }
         }
-        public List<ProcessorInstance> ProcessorInstances
+        public List<ProcessorObj> ProcessorInstances
         {
-            get => _processorInstances;
+            get => _processorState.ProcessorList;
         }
-        public ResultObj SetProcessorReady(ProcessorInstance procInst)
+        public ResultObj SetProcessorReady(ProcessorObj procInst)
         {
             var result = new ResultObj();
             try
             {
-                var processorInstance = _processorInstances.FirstOrDefault(f => f.ID == procInst.ID);
+                var processorInstance = _processorState.ProcessorList.FirstOrDefault(f => f.AppID == procInst.AppID);
                 if (processorInstance != null)
                 {
                     processorInstance.IsReady = procInst.IsReady;
-                    _processorStateChanges[procInst.ID].Add(DateTime.UtcNow);
+                    _processorStateChanges[procInst.AppID].Add(DateTime.UtcNow);
                     result.Success = true;
-                    result.Message = " Success : Set Processor Ready for AppID " + procInst.ID + " to " + procInst.IsReady;
+                    result.Message = " Success : Set Processor Ready for AppID " + procInst.AppID + " to " + procInst.IsReady;
                 }
                 else {
                      result.Success = false;
-                    result.Message = " Error  : Failed to find Processor with AppID " + procInst.ID;
+                    result.Message = " Error  : Failed to find Processor with AppID " + procInst.AppID;
             
                 }
 
@@ -395,14 +414,14 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += "Failed : PaymentSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
                 _isPaymentServiceReportSent = true;
             }
-            foreach (var procInst in _processorInstances)
+            foreach (var procInst in _processorState.ProcessorList)
             {
-                if (_processorStateChanges[procInst.ID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-_pingScheduleInterval.TotalMinutes * 2) && !procInst.IsReportSent)
+                if (_processorStateChanges[procInst.AppID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-_pingScheduleInterval.TotalMinutes * 2) && !procInst.IsReportSent)
                 {
                     //alert MonitorService not changing state
                     result.Success = false;
-                    var timeSpan = DateTime.UtcNow - _processorStateChanges[procInst.ID].LastOrDefault();
-                    result.Message += "Failed : Processor with AppID " + procInst.ID + " has not changed state for " + timeSpan.TotalMinutes + " m ";
+                    var timeSpan = DateTime.UtcNow - _processorStateChanges[procInst.AppID].LastOrDefault();
+                    result.Message += "Failed : Processor with AppID " + procInst.AppID + " has not changed state for " + timeSpan.TotalMinutes + " m ";
                     procInst.IsReportSent = true;
                 }
             }

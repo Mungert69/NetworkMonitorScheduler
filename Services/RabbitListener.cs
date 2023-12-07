@@ -191,8 +191,8 @@ namespace NetworkMonitor.Scheduler.Services
 
             try
             {
-                var procInst = new ProcessorInstance();
-                procInst.ID = processorObj.AppID;
+                var procInst = new ProcessorObj();
+                procInst.AppID = processorObj.AppID;
                 procInst.IsReady = processorObj.IsProcessorReady;
                 var resultProcesoor = _serviceState.SetProcessorReady(procInst);
                 result.Message += resultProcesoor.Message;

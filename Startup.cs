@@ -47,8 +47,12 @@ namespace NetworkMonitor
             services.AddSingleton<IHostedService, ResetScheduleTask>();
             services.AddSingleton<IHostedService, AIScheduleTask>();
             services.AddSingleton<IRabbitRepo, RabbitRepo>();
+             services.AddSingleton<IFileRepo, FileRepo>();        
             services.AddSingleton<IRabbitListener, RabbitListener>();
             services.AddSingleton<IServiceState, ServiceState>();
+            services.AddSingleton<IProcessorStateRabbitListner, ProcessorStateRabbitListner>();
+            services.AddSingleton<IProcessorState, ProcessorState>();
+          
             services.AddSingleton(_cancellationTokenSource);
             services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));
             services.AddControllers();
@@ -60,6 +64,10 @@ namespace NetworkMonitor
                    .AddInitAction<IRabbitListener>((rabbitListener) =>
                     {
                         return Task.CompletedTask; 
+                    })
+                    .AddInitAction<IProcessorStateRabbitListner>((processorStateRabbitListener) =>
+                    {
+                        return Task.CompletedTask;
                     });
         }
        
