@@ -6,7 +6,7 @@
     <PublishProfile>DefaultContainer</PublishProfile>
     <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:8.0-jammy-amd64</ContainerBaseImage>
     <ContainerRepository>mungert/networkmonitorscheduler</ContainerRepository>
-    <ContainerImageTag>1.6.0</ContainerImageTag>
+    <ContainerImageTag>1.6.2</ContainerImageTag>
 </PropertyGroup>
 
 <PropertyGroup>
