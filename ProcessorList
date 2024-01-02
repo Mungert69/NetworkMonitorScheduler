@@ -1,6 +1,6 @@
 [
   {
-    "DisabledEndPointTypesJson": "[\u0022smtp\u0022,\u0022quantum\u0022]",
+    "DisabledEndPointTypesJson": "[\n  \u0022smtp\u0022,\n  \u0022quantum\u0022\n]",
     "DisabledEndPointTypes": [
       "smtp",
       "quantum"
@@ -16,7 +16,9 @@
     "IsEnabled": true,
     "DateCreated": "0001-01-01T00:00:00",
     "IsReady": true,
-    "IsReportSent": false
+    "IsReportSent": false,
+    "AuthKey": "wQTzo4CKTR39Mn8IWbzP4eN5rWQgN98ZleedK2AJZaorkhprccvT7zlZoD2DrYV8grZ9qw7voXRsWIO3NMLUFQ==",
+    "Owner": "root"
   },
   {
     "DisabledEndPointTypesJson": "[]",
@@ -32,7 +34,9 @@
     "IsEnabled": true,
     "DateCreated": "0001-01-01T00:00:00",
     "IsReady": true,
-    "IsReportSent": false
+    "IsReportSent": false,
+    "AuthKey": "hDVk5J0nwxhWVHSeFAhKFiximp0jsHHRhYERi7y4xnVaG2RbqxS28oxfT4egckzS1lIDt0Gp2W16nUADgPEt4g==",
+    "Owner": "root"
   },
   {
     "DisabledEndPointTypesJson": "[]",
@@ -48,50 +52,53 @@
     "IsEnabled": true,
     "DateCreated": "0001-01-01T00:00:00",
     "IsReady": true,
-    "IsReportSent": false
+    "IsReportSent": false,
+    "AuthKey": "gK8JUkXopXOjQpuFNHgbtnjTNB82W6zF8dgHQR8GPL6QfBYFt6OYV4\u002BmOn\u002BECS/1f8eg5hKFStDOgoHwBBPOmg==",
+    "Owner": "root"
   },
   {
-    "DisabledEndPointTypesJson": "[\u0022stmp\u0022,\u0022quantum\u0022]",
-    "DisabledEndPointTypes": [
-      "stmp",
-      "quantum"
-    ],
-    "AppID": "1",
-    "Location": "London - UK",
+    "DisabledEndPointTypesJson": "[]",
+    "DisabledEndPointTypes": [],
+    "AppID": "84ab1c49-e8f2-4bb0-b347-06a3713c4798",
+    "Location": "contact@mahadeva.co.uk - Local",
     "Load": 0,
     "MaxLoad": 1500,
     "IsAtMaxLoad": false,
-    "IsPrivate": false,
+    "IsPrivate": true,
     "ScheduleStr": "",
     "ID": 4,
     "IsEnabled": true,
-    "DateCreated": "0001-01-01T00:00:00",
+    "DateCreated": "2023-12-14T03:30:22.296401",
     "IsReady": true,
-    "IsReportSent": false
+    "IsReportSent": false,
+    "AuthKey": "jZmLk4Dp/GguHHZkwgkkF3skat36zVFpnr5edtE2Enz3wz8r7C/luXcf9JjQIPe\u002B1bNTLSpe68xeup/pe8SzEDEjHW3mtehc8vKahFwmEie\u002B3O0Zv2pYa/Mj\u002B2olW5DF",
+    "Owner": "84ab1c49-e8f2-4bb0-b347-06a3713c4798"
   },
   {
     "DisabledEndPointTypesJson": "[]",
     "DisabledEndPointTypes": [],
-    "AppID": "2",
-    "Location": "USA",
+    "AppID": "d42f52a3-b1db-4e0d-a30f-bf86abae03f8",
+    "Location": "signup@mahadeva.co.uk - Local",
     "Load": 0,
     "MaxLoad": 1500,
     "IsAtMaxLoad": false,
-    "IsPrivate": false,
+    "IsPrivate": true,
     "ScheduleStr": "",
     "ID": 5,
     "IsEnabled": true,
-    "DateCreated": "0001-01-01T00:00:00",
+    "DateCreated": "2023-12-16T03:36:25.25578",
     "IsReady": true,
-    "IsReportSent": false
+    "IsReportSent": false,
+    "AuthKey": "hlmWtwbrwwk6r2XTkpJfTb8w98qth4j2WlxVo4kXG3B1JfWD3XDpFQi3ztaG4TZVGYhEHjwlJdXkbrRSdOmIuh2R/H3vbT2gZVOlRAnVCjUdK70byiU\u002BRzIIHAmrYEXY",
+    "Owner": "d42f52a3-b1db-4e0d-a30f-bf86abae03f8"
   },
   {
     "DisabledEndPointTypesJson": "[]",
     "DisabledEndPointTypes": [],
-    "AppID": "3",
-    "Location": "Frankfurt - Germany",
+    "AppID": "usersetup",
+    "Location": "usersetup - local",
     "Load": 0,
-    "MaxLoad": 1500,
+    "MaxLoad": 10,
     "IsAtMaxLoad": false,
     "IsPrivate": false,
     "ScheduleStr": "",
@@ -99,6 +106,26 @@
     "IsEnabled": true,
     "DateCreated": "0001-01-01T00:00:00",
     "IsReady": true,
-    "IsReportSent": false
+    "IsReportSent": false,
+    "AuthKey": "none",
+    "Owner": "usersetup"
+  },
+  {
+    "DisabledEndPointTypesJson": "[]",
+    "DisabledEndPointTypes": [],
+    "AppID": "b1867ebf-edc4-416c-b3db-53fed587b398",
+    "Location": "mungert@gmail.com - Local",
+    "Load": 0,
+    "MaxLoad": 1500,
+    "IsAtMaxLoad": false,
+    "IsPrivate": true,
+    "ScheduleStr": "",
+    "ID": 7,
+    "IsEnabled": true,
+    "DateCreated": "2024-01-01T23:19:02.265944",
+    "IsReady": true,
+    "IsReportSent": false,
+    "AuthKey": "jcPQFkgiBKdD57XigvyUFQObYyL7MMGFWUdnKq6ayiIVktM9wZo2sGs0iwtOsJLc3M2Tv\u002BPrLtWTvUBLNE9i03H\u002BdDX/J\u002B88KtD\u002BsSTI7NDTJzIybFf7B89jZ\u002BSVQOoq",
+    "Owner": "b1867ebf-edc4-416c-b3db-53fed587b398"
   }
 ]
