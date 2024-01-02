@@ -85,6 +85,7 @@ namespace NetworkMonitor.Scheduler.Services
             _token = cancellationTokenSource.Token;
             _token.Register(() => OnStopping());
             _processorState = processorState;
+            _processorState.OnAppIDAdded += HandleAppIDAdded;
             _systemParams = systemParamsHelper.GetSystemParams();
             _alertServiceStateChanges.Add(DateTime.UtcNow);
             _paymentServiceStateChanges.Add(DateTime.UtcNow);
@@ -147,6 +148,37 @@ namespace NetworkMonitor.Scheduler.Services
 
 
         }
+
+         private ResultObj HandleAppIDAdded(string appID)
+        {
+            var result = new ResultObj();
+            result.Message = " HandleAppIDAdded : ";
+            result.Success = true;
+            try
+            {
+
+                var isExists=_processorStateChanges[appID];
+                if (isExists!=null){
+                    _processorStateChanges[appID].Add(DateTime.UtcNow);      
+                    result.Message += $" Success: Updated StateChange in processorStateChange for AppID {appID} . ";
+          
+                }
+                else {
+                     _processorStateChanges.Add(appID, new List<DateTime>());
+                _processorStateChanges[appID].Add(DateTime.UtcNow);      
+                result.Message += $" Success : Added new AppID to processorStateChanges for AppID {appID} . ";
+          
+                }
+                     
+            }
+            catch (Exception e)
+            {
+                result.Message += " Error : Could not add new AppID to processorStateChanges . Error was : " + e.Message;
+                result.Success = false;
+            }
+            return result;
+        }
+
 
         private TimeSpan GetScheduleInterval(string cronTabString)
         {
@@ -418,7 +450,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += "Failed : PaymentSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
                 _isPaymentServiceReportSent = true;
             }
-            foreach (var procInst in _processorState.EnabledProcessorList)
+            foreach (var procInst in _processorState.EnabledSystemProcessorList())
             {
                 if (_processorStateChanges[procInst.AppID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-_pingScheduleInterval.TotalMinutes * 2) && !procInst.IsReportSent)
                 {
