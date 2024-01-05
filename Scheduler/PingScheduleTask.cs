@@ -20,54 +20,60 @@ namespace NetworkMonitor.Scheduler
         {
             firstRun = true;
             _logger = logger;
-            string scheduleStr = config.GetValue<string>("PingSchedule") ??  "* * * * *";
+            string scheduleStr = config.GetValue<string>("PingSchedule") ?? "* * * * *";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            string message=" SCHEDULE : Starting Ping schedule . ";
+            string message = " SCHEDULE : Starting Ping schedule . ";
+            bool success = true;
             IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
-                 ProcessorConnectObj connectObj = new ProcessorConnectObj();
+                ProcessorConnectObj connectObj = new ProcessorConnectObj();
                 connectObj.NextRunInterval = RunScheduleInterval();
                 foreach (ProcessorObj procInst in serviceState.EnabledProcessorInstances)
                 {
                     if (procInst.IsReady)
                     {
-                        message+=" Success : Sent processorConnect event for appID " + procInst.AppID;
-                        try {
-                              serviceState.RabbitRepo.Publish<ProcessorConnectObj>("processorConnect" + procInst.AppID, connectObj);
-                        _logger.LogInformation(message);
-                        }
-                        catch (Exception e){
-                            _logger.LogError($" Error could not publish event processorConnect {procInst.AppID}");
+                        message += " Success : Sent processorConnect event for appID " + procInst.AppID;
+                        try
+                        {
+                            serviceState.RabbitRepo.Publish<ProcessorConnectObj>("processorConnect" + procInst.AppID, connectObj);
 
                         }
-                      
+                        catch (Exception e)
+                        {
+                            _logger.LogError($" Error could not publish event processorConnect {procInst.AppID}");
+                            success = false;
+                        }
+
                         procInst.IsReady = false;
                     }
                     else
                     {
-                         try {
-                               serviceState.RabbitRepo.Publish("processorWakeUp" + procInst.AppID,null);
-                           message+=" Warning : Processor " + procInst.AppID + " has not signalled it is ready . ";
-                        _logger.LogWarning(message);
-                 
-                          }
-                        catch (Exception e){
-                            _logger.LogError($" Error could not publish event processorWakeUp {procInst.AppID} . Error was : {e.Message}");
+                        try
+                        {
+                            serviceState.RabbitRepo.Publish("processorWakeUp" + procInst.AppID, null);
+                            message += " Warning : Processor " + procInst.AppID + " has not signalled it is ready . ";
 
                         }
-                           }
+                        catch (Exception e)
+                        {
+                            message += $" Error could not publish event processorWakeUp {procInst.AppID} . Error was : {e.Message}";
+                            success = false;
+                        }
+                    }
                 }
             }
             catch (Exception e)
             {
-                message+=" Error : Failed to run Ping schedule : Error Was : " + e.Message.ToString();
-                _logger.LogError(message);
+                message += " Error : Failed to run Ping schedule : Error Was : " + e.Message.ToString();
+                success = false;
             }
+            if (success) _logger.LogInformation(message);
+            else _logger.LogError(message);
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
             return Task.CompletedTask;
         }
