@@ -29,14 +29,14 @@ namespace NetworkMonitor.Scheduler
             {
                 if (serviceState.IsAlertServiceReady)
                 {
-                    serviceState.RabbitRepo.Publish("monitorAlert", null);
+                    serviceState.RabbitRepo.PublishAsync("monitorAlert", null);
                     message+=" Success : Sent monitorAlert event. ";
                     _logger.LogInformation(message);
                     serviceState.IsAlertServiceReady = false;
                 }
                 else
                 {
-                    serviceState.RabbitRepo.Publish("serviceWakeUp", null);
+                    serviceState.RabbitRepo.PublishAsync("serviceWakeUp", null);
                     message +=" Warning : AlertService has not signalled it is ready ";
                     _logger.LogWarning(message);
                 }

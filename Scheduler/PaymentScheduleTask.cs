@@ -32,7 +32,7 @@ namespace NetworkMonitor.Scheduler
 
                 if (serviceState.IsPaymentServiceReady)
                 {
-                    serviceState.RabbitRepo.Publish("paymentCheck", null);
+                    serviceState.RabbitRepo.PublishAsync("paymentCheck", null);
                     message+=" Success : Sent paymentCheck event . ";
                     _logger.LogInformation(message);
                     serviceState.IsPaymentServiceReady = false;
@@ -40,7 +40,7 @@ namespace NetworkMonitor.Scheduler
                 else
                 {
 
-                    serviceState.RabbitRepo.Publish("paymentWakeUp", null);
+                    serviceState.RabbitRepo.PublishAsync("paymentWakeUp", null);
                     message+=" Warning : Payment Service has not signalled it is ready sent paymentWakeUp . ";
                     _logger.LogWarning(message);
                 }

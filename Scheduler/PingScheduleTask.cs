@@ -40,7 +40,7 @@ namespace NetworkMonitor.Scheduler
                         message += " Success : Sent processorConnect event for appID " + procInst.AppID;
                         try
                         {
-                            serviceState.RabbitRepo.Publish<ProcessorConnectObj>("processorConnect" + procInst.AppID, connectObj);
+                            serviceState.RabbitRepo.PublishAsync<ProcessorConnectObj>("processorConnect" + procInst.AppID, connectObj);
 
                         }
                         catch (Exception e)
@@ -55,7 +55,7 @@ namespace NetworkMonitor.Scheduler
                     {
                         try
                         {
-                            serviceState.RabbitRepo.Publish("processorWakeUp" + procInst.AppID, null);
+                            serviceState.RabbitRepo.PublishAsync("processorWakeUp" + procInst.AppID, null);
                             message += " Warning : Processor " + procInst.AppID + " has not signalled it is ready . ";
 
                         }

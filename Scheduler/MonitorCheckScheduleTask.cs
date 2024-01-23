@@ -31,14 +31,14 @@ namespace NetworkMonitor.Scheduler
             {
                         if (serviceState.IsMonitorCheckServiceReady)
                         {
-                            serviceState.RabbitRepo.Publish( "monitorCheck", null );
+                            serviceState.RabbitRepo.PublishAsync( "monitorCheck", null );
                             message+=" Success : Sent monitorCheck event . ";
                             _logger.LogInformation(message);
                             serviceState.IsMonitorCheckServiceReady = false;
                         }
                         else
                         {
-                            serviceState.RabbitRepo.Publish("monitorCheck",null );
+                            serviceState.RabbitRepo.PublishAsync("monitorCheck",null );
                            message+=" Warning : MonitorCheck Service has not signalled it is ready sent monitorCheck . ";
                             _logger.LogWarning(message);
                         }
