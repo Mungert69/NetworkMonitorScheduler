@@ -26,7 +26,7 @@ namespace NetworkMonitor.Scheduler
             IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             try
             {
-                serviceState!.RabbitRepo.Publish("createHostSummaryReport", null);
+                serviceState!.RabbitRepo.PublishAsync("createHostSummaryReport", null);
                 message += " Success : Sent report event. ";
                 _logger.LogInformation(message);
             }

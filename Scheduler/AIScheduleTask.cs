@@ -28,7 +28,7 @@ namespace NetworkMonitor.Scheduler
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
             {
-                serviceState.RabbitRepo.Publish("processBlogList", null);
+                serviceState.RabbitRepo.PublishAsync("processBlogList", null);
                 message+=" Success : Sent processBlogList event ";
                 _logger.LogInformation(message);
             }

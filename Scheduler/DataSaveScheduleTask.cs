@@ -29,7 +29,7 @@ namespace NetworkMonitor.Scheduler
             {
                     if (serviceState.IsMonitorDataSaveReady)
                     {
-                        serviceState.RabbitRepo.Publish( "saveData", null);
+                        serviceState.RabbitRepo.PublishAsync( "saveData", null);
                         message+=" Success : Sent saveData event.";
                         _logger.LogInformation(message);
                         serviceState.IsMonitorDataSaveReady = false;
@@ -40,7 +40,7 @@ namespace NetworkMonitor.Scheduler
                             IsDataSaveReady=true,
                             IsDataSaveMessage=true
                         };
-                        serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataCheck", serviceObj);
+                        serviceState.RabbitRepo.PublishAsync<MonitorDataInitObj>("dataCheck", serviceObj);
                         message+=" Warning : DataSave has not signalled it is ready. Sent dataCheck event .";
                         _logger.LogWarning(message);
                     }

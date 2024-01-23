@@ -37,7 +37,7 @@ namespace NetworkMonitor.Scheduler
                         IsDataReady = true,
                         IsDataMessage = true
                     };
-                    serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataCheck", serviceObj);
+                    serviceState.RabbitRepo.PublishAsync<MonitorDataInitObj>("dataCheck", serviceObj);
 
                     message += " Warning : DataCheck Service has not signalled it is ready . Sent dataCheck ";
                     _logger.LogWarning(message);

@@ -28,7 +28,7 @@ namespace NetworkMonitor.Scheduler
             {
                     if (serviceState.IsMonitorDataPurgeReady)
                     {
-                        serviceState.RabbitRepo.Publish( "dataPurge", null);
+                        serviceState.RabbitRepo.PublishAsync( "dataPurge", null);
                         message+=" Success : Sent purgeData event.";
                         _logger.LogInformation(message);
                         serviceState.IsMonitorDataPurgeReady = false;
@@ -39,7 +39,7 @@ namespace NetworkMonitor.Scheduler
                             IsDataPurgeReady=true,
                             IsDataPurgeMessage=true
                         };
-                        serviceState.RabbitRepo.Publish<MonitorDataInitObj>("dataWakeUp", serviceObj);
+                        serviceState.RabbitRepo.PublishAsync<MonitorDataInitObj>("dataWakeUp", serviceObj);
                         message+=" Warning : MonitorData has not signalled it is ready. Sent dataWakeUp event. ";
                         _logger.LogWarning(message);
                     }
