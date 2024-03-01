@@ -25,6 +25,7 @@ namespace NetworkMonitor.Scheduler.Services
     {
         Task Init();
         bool IsAlertServiceReady { get; set; }
+        bool IsPredictServiceReady { get; set; }
         bool IsPaymentServiceReady { get; set; }
         bool IsMonitorCheckServiceReady { get; set; }
         bool IsMonitorDataSaveReady { get; set; }
@@ -46,8 +47,10 @@ namespace NetworkMonitor.Scheduler.Services
         private List<DateTime> _monitorDataPurgeStateChanges = new List<DateTime>();
         private List<DateTime> _monitorCheckDataStateChanges = new List<DateTime>();
         private List<DateTime> _alertServiceStateChanges = new List<DateTime>();
+        private List<DateTime> _predictServiceStateChanges = new List<DateTime>();
         private List<DateTime> _paymentServiceStateChanges = new List<DateTime>();
         private bool _isAlertServiceReady = true;
+        private bool _isPredictServiceReady = true;
         private bool _isPaymentServiceReady = true;
         private bool _isMonitorDataSaveReady = true;
         private bool _isMonitorCheckServiceReady = true;
@@ -58,6 +61,7 @@ namespace NetworkMonitor.Scheduler.Services
         private bool _isMonitorDataPurgeReportSent = false;
         private bool _isMonitorCheckDataReportSent = false;
         private bool _isAlertServiceReportSent = false;
+        private bool _isPredictServiceReportSent = false;
         private bool _isPaymentServiceReportSent = false;
         private IConfiguration _config;
         private ILogger _logger;
@@ -69,6 +73,7 @@ namespace NetworkMonitor.Scheduler.Services
         private TimeSpan _paymentInterval;
         private TimeSpan _dataSaveInterval;
         private TimeSpan _alertInterval;
+        private TimeSpan _predictInterval;
         private TimeSpan _aIInterval;
         private TimeSpan _dataCheckInterval;
         private TimeSpan _dataPurgeInterval;
@@ -88,6 +93,7 @@ namespace NetworkMonitor.Scheduler.Services
             _processorState.OnAppIDAdded += HandleAppIDAdded;
             _systemParams = systemParamsHelper.GetSystemParams();
             _alertServiceStateChanges.Add(DateTime.UtcNow);
+            _predictServiceStateChanges.Add(DateTime.UtcNow);
             _paymentServiceStateChanges.Add(DateTime.UtcNow);
             _monitorDataSaveStateChanges.Add(DateTime.UtcNow);
             _monitorCheckServiceStateChanges.Add(DateTime.UtcNow);
@@ -137,6 +143,7 @@ namespace NetworkMonitor.Scheduler.Services
                 _paymentInterval = GetScheduleInterval(_config["PaymentSchedule"] ?? "* * * * *");
                 _dataSaveInterval = GetScheduleInterval(_config["DataSaveSchedule"] ?? "0 */6 * * *");
                 _alertInterval = GetScheduleInterval(_config["AlertSchedule"] ?? "* * * * *");
+                _predictInterval = GetScheduleInterval(_config["AlertSchedule"] ?? "*/5 * * * *");
                 _aIInterval = GetScheduleInterval(_config["AISchedule"] ?? "5 0 * * *");
                 _dataCheckInterval = GetScheduleInterval(_config["DataCheckSchedule"] ?? "* * * * *");
                 _dataPurgeInterval = GetScheduleInterval(_config["DataPurgeSchedule"] ?? "0 1 * * 0");
@@ -218,6 +225,7 @@ namespace NetworkMonitor.Scheduler.Services
         public ResultObj ResetReportSent()
         {
             _isAlertServiceReportSent = false;
+            _isPredictServiceReportSent = false;
             _isMonitorDataSaveReportSent = false;
             _isMonitorCheckServiceReportSent = false;
             _isMonitorDataPurgeReportSent = false;
@@ -252,6 +260,18 @@ namespace NetworkMonitor.Scheduler.Services
                 {
                     _isAlertServiceReady = value;
                     _alertServiceStateChanges.Add(DateTime.UtcNow);
+                }
+
+            }
+        }
+        public bool IsPredictServiceReady
+        {
+            get => _isPredictServiceReady; set
+            {
+                if (value != _isPredictServiceReady)
+                {
+                    _isPredictServiceReady = value;
+                    _predictServiceStateChanges.Add(DateTime.UtcNow);
                 }
 
             }
@@ -424,6 +444,14 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Success = false;
                 var timeSpan = DateTime.UtcNow - _alertServiceStateChanges.LastOrDefault();
                 result.Message += "Failed : AlertSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
+                _isAlertServiceReportSent = true;
+            }
+            if (_predictServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_predictInterval.TotalMinutes * 2) && !_isPredictServiceReportSent)
+            {
+                //predict MonitorMLService not changing state
+                result.Success = false;
+                var timeSpan = DateTime.UtcNow - _predictServiceStateChanges.LastOrDefault();
+                result.Message += "Failed : MonitorMLSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
                 _isAlertServiceReportSent = true;
             }
             if (_monitorCheckServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_monitorCheckInterval.TotalMinutes * 2) && !_isMonitorCheckServiceReportSent)
