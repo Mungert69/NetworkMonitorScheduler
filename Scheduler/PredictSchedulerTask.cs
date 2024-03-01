@@ -31,6 +31,8 @@ namespace NetworkMonitor.Scheduler
                 {
                     serviceState.RabbitRepo.PublishAsync("predictAlert", null);
                     message+=" Success : Sent predictAlert event. ";
+                      serviceState.RabbitRepo.PublishAsync("mlCheckLatestHosts", null);
+                      message+=" Success : Sent mlCheckLatestHosts event. ";
                     _logger.LogInformation(message);
                     serviceState.IsAlertServiceReady = false;
                 }
