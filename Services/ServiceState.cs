@@ -143,7 +143,7 @@ namespace NetworkMonitor.Scheduler.Services
                 _paymentInterval = GetScheduleInterval(_config["PaymentSchedule"] ?? "* * * * *");
                 _dataSaveInterval = GetScheduleInterval(_config["DataSaveSchedule"] ?? "0 */6 * * *");
                 _alertInterval = GetScheduleInterval(_config["AlertSchedule"] ?? "* * * * *");
-                _predictInterval = GetScheduleInterval(_config["AlertSchedule"] ?? "*/5 * * * *");
+                _predictInterval = GetScheduleInterval(_config["PredictSchedule"] ?? "*/5 * * * *");
                 _aIInterval = GetScheduleInterval(_config["AISchedule"] ?? "5 0 * * *");
                 _dataCheckInterval = GetScheduleInterval(_config["DataCheckSchedule"] ?? "* * * * *");
                 _dataPurgeInterval = GetScheduleInterval(_config["DataPurgeSchedule"] ?? "0 1 * * 0");
