@@ -452,7 +452,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Success = false;
                 var timeSpan = DateTime.UtcNow - _predictServiceStateChanges.LastOrDefault();
                 result.Message += "Failed : MonitorMLSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
-                _isAlertServiceReportSent = true;
+                _isPredictServiceReportSent = true;
             }
             if (_monitorCheckServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_monitorCheckInterval.TotalMinutes * 2) && !_isMonitorCheckServiceReportSent)
             {
