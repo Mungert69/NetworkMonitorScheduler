@@ -34,13 +34,13 @@ namespace NetworkMonitor.Scheduler.Services
         List<ProcessorObj> EnabledProcessorInstances { get; }
         ResultObj SetProcessorReady(ProcessorObj procInst);
         ResultObj CheckHealth();
-        ResultObj SendHealthReport(string reportMessage);
+        ResultObj SendHealthReport(string reportMessage, string? owner=null);
         ResultObj ResetReportSent();
         public IRabbitRepo RabbitRepo { get; }
     }
     public class ServiceState : IServiceState
     {
-       // private List<ProcessorInstance> _processorInstances = new List<ProcessorInstance>();
+        // private List<ProcessorInstance> _processorInstances = new List<ProcessorInstance>();
         private Dictionary<string, List<DateTime>> _processorStateChanges = new Dictionary<string, List<DateTime>>();
         private List<DateTime> _monitorDataSaveStateChanges = new List<DateTime>();
         private List<DateTime> _monitorCheckServiceStateChanges = new List<DateTime>();
@@ -86,7 +86,7 @@ namespace NetworkMonitor.Scheduler.Services
             _config = config;
             _logger = logger;
             _rabbitRepo = rabbitRepo;
-            _fileRepo=fileRepo;
+            _fileRepo = fileRepo;
             _token = cancellationTokenSource.Token;
             _token.Register(() => OnStopping());
             _processorState = processorState;
@@ -100,7 +100,7 @@ namespace NetworkMonitor.Scheduler.Services
             _monitorDataPurgeStateChanges.Add(DateTime.UtcNow);
             _monitorCheckDataStateChanges.Add(DateTime.UtcNow);
             var processorList = new List<ProcessorObj>();
-             try
+            try
             {
                 _fileRepo.CheckFileExists("ProcessorList", _logger);
                 processorList = _fileRepo.GetStateJson<List<ProcessorObj>>("ProcessorList");
@@ -111,13 +111,14 @@ namespace NetworkMonitor.Scheduler.Services
                 _logger.LogInformation($" Error : Unable to get Processor List from State . Error was : {e.Message}");
 
             }
-             if (processorList == null || processorList.Count==0)
+            if (processorList == null || processorList.Count == 0)
             {
 
                 _logger.LogError(" Error : No processors in processor list .");
                 processorList = new List<ProcessorObj>();
             }
-            else {
+            else
+            {
                 _logger.LogInformation($" Success : Got {processorList.Count} processors from state . ");
             }
             _processorState.ProcessorList = processorList;
@@ -126,7 +127,7 @@ namespace NetworkMonitor.Scheduler.Services
             //_config.GetSection("ProcessorList").Bind(processorList);
             foreach (var processorObj in _processorState.EnabledProcessorList)
             {
-                processorObj.IsReportSent=false;
+                processorObj.IsReportSent = false;
                 _processorStateChanges.Add(processorObj.AppID, new List<DateTime>());
                 _logger.LogInformation(" Success : added Processor AppID " + processorObj.AppID);
             }
@@ -156,7 +157,7 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
-         private ResultObj HandleAppIDAdded(string appID)
+        private ResultObj HandleAppIDAdded(string appID)
         {
             var result = new ResultObj();
             result.Message = " HandleAppIDAdded : ";
@@ -164,19 +165,21 @@ namespace NetworkMonitor.Scheduler.Services
             try
             {
 
-                var isExists=_processorStateChanges[appID];
-                if (isExists!=null){
-                    _processorStateChanges[appID].Add(DateTime.UtcNow);      
+                var isExists = _processorStateChanges[appID];
+                if (isExists != null)
+                {
+                    _processorStateChanges[appID].Add(DateTime.UtcNow);
                     result.Message += $" Success: Updated StateChange in processorStateChange for AppID {appID} . ";
-          
+
                 }
-                else {
-                     _processorStateChanges.Add(appID, new List<DateTime>());
-                _processorStateChanges[appID].Add(DateTime.UtcNow);      
-                result.Message += $" Success : Added new AppID to processorStateChanges for AppID {appID} . ";
-          
+                else
+                {
+                    _processorStateChanges.Add(appID, new List<DateTime>());
+                    _processorStateChanges[appID].Add(DateTime.UtcNow);
+                    result.Message += $" Success : Added new AppID to processorStateChanges for AppID {appID} . ";
+
                 }
-                     
+
             }
             catch (Exception e)
             {
@@ -341,10 +344,11 @@ namespace NetworkMonitor.Scheduler.Services
                     result.Success = true;
                     result.Message = " Success : Set Processor Ready for AppID " + procInst.AppID + " to " + procInst.IsReady;
                 }
-                else {
-                     result.Success = false;
+                else
+                {
+                    result.Success = false;
                     result.Message = " Error  : Failed to find Processor with AppID " + procInst.AppID;
-            
+
                 }
 
             }
@@ -355,13 +359,13 @@ namespace NetworkMonitor.Scheduler.Services
             }
             return result;
         }
-        public ResultObj SendHealthReport(string reportMessage)
+        public ResultObj SendHealthReport(string reportMessage, string? owner = null)
         {
             ResultObj result = new ResultObj();
             var alertMessage = new AlertMessage();
-            var publicIP=_systemParams.PublicIPAddress;
-            string publicIPStr="IP N/A";
-            if (publicIP!=null) publicIP.ToString();
+            var publicIP = _systemParams.PublicIPAddress;
+            string publicIPStr = "IP N/A";
+            if (publicIP != null) publicIP.ToString();
             alertMessage.Message += "\n\nThis message was sent by the messenger running at " + _systemParams.ThisSystemUrl.ExternalUrl + " (" + publicIPStr + " Health Report message : " + reportMessage;
             string? emailFrom = _systemParams.SystemEmail;
             string? systemPassword = _systemParams.SystemPassword;
@@ -373,6 +377,11 @@ namespace NetworkMonitor.Scheduler.Services
             userInfo.Email = emailFrom;
             userInfo.Email_verified = true;
             userInfo.Name = "System Admin";
+            if (owner != null)
+            {
+                alertMessage.LookUpEmail = true;
+                userInfo.UserID = owner;
+            }
             alertMessage.UserInfo = userInfo;
             alertMessage.Subject = "Servive Health Report";
             try
@@ -425,17 +434,17 @@ namespace NetworkMonitor.Scheduler.Services
             if (_monitorDataSaveStateChanges.LastOrDefault() < DateTime.UtcNow.AddHours(-_dataSaveInterval.TotalHours) && !_isMonitorDataSaveReportSent)
             {
                 //alert MonitorService not changing state
-                result.Success = false;
                 var timeSpan = DateTime.UtcNow - _monitorDataSaveStateChanges.LastOrDefault();
-                result.Message += "Failed : DataSave has not changed state for " + timeSpan.TotalHours + " h ";
+                string message = "Failed : DataSave has not changed state for " + timeSpan.TotalHours + " h ";
+                result = SendHealthReport(message);
                 _isMonitorDataSaveReportSent = true;
             }
             if (_monitorDataPurgeStateChanges.LastOrDefault() < DateTime.UtcNow.AddHours(-_dataPurgeInterval.TotalHours) && !_isMonitorDataPurgeReportSent)
             {
                 //alert MonitorData not changing state
-                result.Success = false;
                 var timeSpan = DateTime.UtcNow - _monitorDataPurgeStateChanges.LastOrDefault();
-                result.Message += "Failed : MonitorPurge has not changed state for " + timeSpan.TotalHours + " h ";
+                string message = "Failed : MonitorPurge has not changed state for " + timeSpan.TotalHours + " h ";
+                result = SendHealthReport(message);
                 _isMonitorDataPurgeReportSent = true;
             }
             if (_alertServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_alertInterval.TotalMinutes * 2) && !_isAlertServiceReportSent)
@@ -443,7 +452,8 @@ namespace NetworkMonitor.Scheduler.Services
                 //alert MonitorService not changing state
                 result.Success = false;
                 var timeSpan = DateTime.UtcNow - _alertServiceStateChanges.LastOrDefault();
-                result.Message += "Failed : AlertSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
+                string message = "Failed : AlertSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
+                result = SendHealthReport(message);
                 _isAlertServiceReportSent = true;
             }
             if (_predictServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_predictInterval.TotalMinutes * 2) && !_isPredictServiceReportSent)
@@ -451,7 +461,8 @@ namespace NetworkMonitor.Scheduler.Services
                 //predict MonitorMLService not changing state
                 result.Success = false;
                 var timeSpan = DateTime.UtcNow - _predictServiceStateChanges.LastOrDefault();
-                result.Message += "Failed : MonitorMLSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
+                string message = "Failed : MonitorMLSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
+                result = SendHealthReport(message);
                 _isPredictServiceReportSent = true;
             }
             if (_monitorCheckServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_monitorCheckInterval.TotalMinutes * 2) && !_isMonitorCheckServiceReportSent)
@@ -459,7 +470,8 @@ namespace NetworkMonitor.Scheduler.Services
                 //alert MonitorService not changing state
                 result.Success = false;
                 var timeSpan = DateTime.UtcNow - _monitorCheckServiceStateChanges.LastOrDefault();
-                result.Message += "Failed : MonitorCheck has not changed state for " + timeSpan.TotalMinutes + " m ";
+                string message = "Failed : MonitorCheck has not changed state for " + timeSpan.TotalMinutes + " m ";
+                result = SendHealthReport(message);
                 _isMonitorCheckServiceReportSent = true;
             }
             if (_monitorCheckDataStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_dataCheckInterval.TotalMinutes * 2) && !_isMonitorCheckDataReportSent)
@@ -467,7 +479,8 @@ namespace NetworkMonitor.Scheduler.Services
                 //alert MonitorData not changing state
                 result.Success = false;
                 var timeSpan = DateTime.UtcNow - _monitorCheckDataStateChanges.LastOrDefault();
-                result.Message += "Failed : DataCheck has not changed state for " + timeSpan.TotalMinutes + " m ";
+                string message = "Failed : DataCheck has not changed state for " + timeSpan.TotalMinutes + " m ";
+                result = SendHealthReport(message);
                 _isMonitorCheckDataReportSent = true;
             }
             if (_paymentServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_paymentInterval.TotalMinutes * 2) && !_isPaymentServiceReportSent)
@@ -475,17 +488,21 @@ namespace NetworkMonitor.Scheduler.Services
                 //payment MonitorService not changing state
                 result.Success = false;
                 var timeSpan = DateTime.UtcNow - _paymentServiceStateChanges.LastOrDefault();
-                result.Message += "Failed : PaymentSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
+                string message = "Failed : PaymentSerivce has not changed state for " + timeSpan.TotalMinutes + " m ";
+                result = SendHealthReport(message);
                 _isPaymentServiceReportSent = true;
             }
-            foreach (var procInst in _processorState.EnabledSystemProcessorList())
+            foreach (var procInst in _processorState.EnabledSendAlertProcessorList())
             {
                 if (_processorStateChanges[procInst.AppID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-_pingScheduleInterval.TotalMinutes * 2) && !procInst.IsReportSent)
                 {
                     //alert MonitorService not changing state
                     result.Success = false;
                     var timeSpan = DateTime.UtcNow - _processorStateChanges[procInst.AppID].LastOrDefault();
-                    result.Message += "Failed : Processor with AppID " + procInst.AppID + " has not changed state for " + timeSpan.TotalMinutes + " m ";
+                    string message = "Failed : Processor with AppID " + procInst.AppID + " has not changed state for " + timeSpan.TotalMinutes + " m ";
+                    string? owner = null;
+                    if (procInst.Owner != "root") owner = procInst.Owner;
+                    result = SendHealthReport(message, owner);
                     procInst.IsReportSent = true;
                 }
             }

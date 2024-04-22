@@ -51,15 +51,6 @@ namespace NetworkMonitor.Scheduler
                 {
 
                     _logger.LogCritical(message+" Error : Schedule State failed Health Check Message was : " + result.Message);
-                    var resultSend = serviceState.SendHealthReport(result.Message);
-                    if (resultSend.Success)
-                    {
-                        _logger.LogInformation(message+resultSend.Message);
-                    }
-                    else
-                    {
-                        _logger.LogError(message+" Error : Sending Health Report. Error was : " + resultSend.Message);
-                    }
 
                 }
                 else
