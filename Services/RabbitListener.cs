@@ -67,6 +67,12 @@ namespace NetworkMonitor.Scheduler.Services
                 FuncName = "monitorDataReady",
                 MessageTimeout = 60000
             });
+            _rabbitMQObjs.Add(new RabbitMQObj()
+            {
+                ExchangeName = "predictServiceReady",
+                FuncName = "predictServiceReady",
+                MessageTimeout = 60000
+            });
 
         }
         protected override ResultObj DeclareConsumers()
@@ -161,6 +167,22 @@ namespace NetworkMonitor.Scheduler.Services
 
                         };
                             break;
+                        case "predictServiceReady":
+                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.Received += (model, ea) =>
+                        {
+                            try
+                            {
+                                result = PredictServiceReady(ConvertToObject<MonitorMLInitObj>(model, ea));
+                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.predictServiceReady " + ex.Message);
+                            }
+
+                        };
+                            break;
 
                     }
                 }
@@ -183,9 +205,10 @@ namespace NetworkMonitor.Scheduler.Services
             ResultObj result = new ResultObj();
             result.Success = false;
             result.Message = "MessageAPI : ProcessorrReady : ";
-            if (processorObj==null){
-                result.Success=false;
-                result.Message +=" Error : processorObj is null .";
+            if (processorObj == null)
+            {
+                result.Success = false;
+                result.Message += " Error : processorObj is null .";
                 return result;
             }
 
@@ -216,9 +239,10 @@ namespace NetworkMonitor.Scheduler.Services
             ResultObj result = new ResultObj();
             result.Success = false;
             result.Message = "MessageAPI : PaymentServiceReady : ";
-            if (paymentObj==null){
-                result.Success=false;
-                result.Message +=" Error :paymentObj is null .";
+            if (paymentObj == null)
+            {
+                result.Success = false;
+                result.Message += " Error :paymentObj is null .";
                 return result;
             }
             try
@@ -245,9 +269,10 @@ namespace NetworkMonitor.Scheduler.Services
             ResultObj result = new ResultObj();
             result.Success = false;
             result.Message = "MessageAPI : AlertServiceReady : ";
-            if (alertObj==null){
-                result.Success=false;
-                result.Message +=" Error : alertObj is null .";
+            if (alertObj == null)
+            {
+                result.Success = false;
+                result.Message += " Error : alertObj is null .";
                 return result;
             }
             try
@@ -273,9 +298,10 @@ namespace NetworkMonitor.Scheduler.Services
             ResultObj result = new ResultObj();
             result.Success = false;
             result.Message = "MessageAPI : MonitorServiceReady : ";
-            if (serviceObj==null){
-                result.Success=false;
-                result.Message +=" Error : serviceObj is null .";
+            if (serviceObj == null)
+            {
+                result.Success = false;
+                result.Message += " Error : serviceObj is null .";
                 return result;
             }
             try
@@ -302,9 +328,10 @@ namespace NetworkMonitor.Scheduler.Services
             ResultObj result = new ResultObj();
             result.Success = false;
             result.Message = "MessageAPI : MonitorDataReady : ";
-            if (dataObj==null){
-                result.Success=false;
-                result.Message +=" Error : dataObj is null .";
+            if (dataObj == null)
+            {
+                result.Success = false;
+                result.Message += " Error : dataObj is null .";
                 return result;
             }
             try
@@ -341,6 +368,34 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
+  public ResultObj PredictServiceReady([FromBody] MonitorMLInitObj? serviceObj)
+        {
+            ResultObj result = new ResultObj();
+            result.Success = false;
+            result.Message = "MessageAPI : PredictServiceReady : ";
+            if (serviceObj == null)
+            {
+                result.Success = false;
+                result.Message += " Error : serviceObj is null .";
+                return result;
+            }
+            try
+            {
+                _serviceState.IsPredictServiceReady = serviceObj.IsMLReady;
+                result.Message += "Success set PredictServiceReady to " + serviceObj.IsMLReady;
+                result.Success = true;
+                _logger.LogInformation(result.Message);
+            }
+            catch (Exception e)
+            {
+                result.Data = null;
+                result.Success = false;
+                result.Message += "Error : Failed to set PredictServiceReady : Error was : " + e.Message + " ";
+                _logger.LogError("Error : Failed to set PredictServiceReady : Error was : " + e.Message + " ");
+            }
+            return result;
+
+        }
 
 
     }
