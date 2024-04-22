@@ -347,3 +347,4 @@ obj/staticwebassets.pack.sentinel
 appsettings.Development.json
 appsettings.json
 ProcessorList
+/.mono

@@ -33,8 +33,8 @@ namespace NetworkMonitor.Scheduler.Services
         bool IsMonitorDataPurgeReady { get; set; }
         List<ProcessorObj> EnabledProcessorInstances { get; }
         ResultObj SetProcessorReady(ProcessorObj procInst);
-        ResultObj CheckHealth();
-        ResultObj SendHealthReport(string reportMessage, string? owner=null);
+        Task <ResultObj> CheckHealth();
+        ResultObj SendHealthReport(string reportMessage);
         ResultObj ResetReportSent();
         public IRabbitRepo RabbitRepo { get; }
     }
@@ -359,7 +359,49 @@ namespace NetworkMonitor.Scheduler.Services
             }
             return result;
         }
-        public ResultObj SendHealthReport(string reportMessage, string? owner = null)
+
+        private async Task<ResultObj> SendHealthPublicAgentReport(string reportMessage, ProcessorObj processorObj)
+        {
+            ResultObj result = new ResultObj();
+            var alertMessage = new AlertMessage();
+            var userInfo = new UserInfo();
+            userInfo.UserID = processorObj.Owner;
+            string[] parts = processorObj.Location.Split(" - ", StringSplitOptions.RemoveEmptyEntries);
+
+            string email = "";
+            if (parts.Length > 0)
+            {
+                email = parts[0];  // The email will be the first part before " - "
+            }
+            else
+            {
+                result.Message += "No email found in the processor Location.";
+                result.Success = false;
+                return result;
+            }
+            userInfo.Email = email;
+            userInfo.Email_verified = true;
+
+            alertMessage.UserInfo = userInfo;
+            alertMessage.SendTrustPilot = false;
+            alertMessage.Subject = "Agent down";
+            alertMessage.Message = $"Monitoring service is no longer receiving data from your agent at Location {processorObj.Location} . If you want to continue using the agent. First check the agent is running and has internet connectivity. If it has then try re-authenticating the agent. If you don't want to receive any more alerts that the agent is down. Login to the Free Network Monitor Dashboard (https://freenetworkmonitor.click/dashboard) , goto your profile and untick Send Agent Down Alerts.";
+            try
+            {
+                await _rabbitRepo.PublishAsync<AlertMessage>("alertMessage", alertMessage);
+                _logger.LogInformation(" Sent alertMessage for email " + alertMessage.EmailTo);
+                result.Success = true;
+            }
+            catch (Exception e)
+            {
+                 result.Message=" Error - Could not publish event alertMessage for email " + alertMessage.EmailTo + " . Error was " + e.ToString();
+                _logger.LogError(result.Message);       
+                result.Success = false;
+            }
+            return result;
+
+        }
+        public ResultObj SendHealthReport(string reportMessage)
         {
             ResultObj result = new ResultObj();
             var alertMessage = new AlertMessage();
@@ -377,11 +419,7 @@ namespace NetworkMonitor.Scheduler.Services
             userInfo.Email = emailFrom;
             userInfo.Email_verified = true;
             userInfo.Name = "System Admin";
-            if (owner != null)
-            {
-                alertMessage.LookUpEmail = true;
-                userInfo.UserID = owner;
-            }
+
             alertMessage.UserInfo = userInfo;
             alertMessage.Subject = "Servive Health Report";
             try
@@ -426,7 +464,7 @@ namespace NetworkMonitor.Scheduler.Services
             }
             return result;
         }
-        public ResultObj CheckHealth()
+        public async Task<ResultObj> CheckHealth()
         {
 
             var result = new ResultObj();
@@ -500,9 +538,8 @@ namespace NetworkMonitor.Scheduler.Services
                     result.Success = false;
                     var timeSpan = DateTime.UtcNow - _processorStateChanges[procInst.AppID].LastOrDefault();
                     string message = "Failed : Processor with AppID " + procInst.AppID + " has not changed state for " + timeSpan.TotalMinutes + " m ";
-                    string? owner = null;
-                    if (procInst.Owner != "root") owner = procInst.Owner;
-                    result = SendHealthReport(message, owner);
+                    if (procInst.Owner != "root") result = await SendHealthPublicAgentReport(message, procInst);
+                    else result = SendHealthReport(message);
                     procInst.IsReportSent = true;
                 }
             }

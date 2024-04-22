@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NetworkMonitor.Scheduler.Services;
 using NetworkMonitor.Objects.ServiceMessage;
 using NetworkMonitor.Objects.Factory;
+using NetworkMonitor.Objects;
 using NetworkMonitor.BackgroundService;
 using System;
 using System.Net.Http;
@@ -46,7 +47,7 @@ namespace NetworkMonitor.Scheduler
             try
             {
 
-                var result = serviceState.CheckHealth();
+                ResultObj result = serviceState.CheckHealth().Result;
                 if (!result.Success)
                 {
 
