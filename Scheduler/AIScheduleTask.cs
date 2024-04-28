@@ -18,7 +18,7 @@ namespace NetworkMonitor.Scheduler
         {
 
             _logger = logger;
-            string scheduleStr = config.GetValue<string>("AISchedule") ?? "5 0 * * *";
+            string scheduleStr = config.GetValue<string>("AISchedule") ?? "0 6 * * *";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
@@ -30,6 +30,8 @@ namespace NetworkMonitor.Scheduler
             {
                 serviceState.RabbitRepo.PublishAsync("processBlogList", null);
                 message+=" Success : Sent processBlogList event ";
+                 serviceState.RabbitRepo.PublishAsync("fillUserTokens", null);
+                 message+=" Success : Sent fillUserTokens event ";
                 _logger.LogInformation(message);
             }
             catch (Exception e)
