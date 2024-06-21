@@ -16,23 +16,28 @@ namespace NetworkMonitor.Scheduler
     {
         private bool firstRun;
         private ILogger _logger;
-        private bool _disabled=false;
+        private bool _disabled = false;
         public PaymentScheduleTask(ILogger<PaymentScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             firstRun = true;
             _logger = logger;
-            string? scheduleStr = config.GetValue<string>("PaymentSchedule") ;
-            if (scheduleStr.IsNullOrEmpty()) _disabled = true;
-            else updateSchedule(scheduleStr!);
+            string scheduleStr = config.GetValue<string>("PaymentSchedule") ?? "";
+            if (scheduleStr.IsNullOrEmpty())
+            {
+                _disabled = true;
+                scheduleStr = "* * * * *";
+            }
+            updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            if (_disabled) { 
+            if (_disabled)
+            {
                 _logger.LogInformation("SCHEDULE : Payment schedule is Disabled ");
                 return Task.CompletedTask;
-                    
+
             }
-            string message=" SCHEDULE : Starting Payment schedule  . ";
+            string message = " SCHEDULE : Starting Payment schedule  . ";
             IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
@@ -41,7 +46,7 @@ namespace NetworkMonitor.Scheduler
                 if (serviceState.IsPaymentServiceReady)
                 {
                     serviceState.RabbitRepo.PublishAsync("paymentCheck", null);
-                    message+=" Success : Sent paymentCheck event . ";
+                    message += " Success : Sent paymentCheck event . ";
                     _logger.LogInformation(message);
                     serviceState.IsPaymentServiceReady = false;
                 }
@@ -49,13 +54,13 @@ namespace NetworkMonitor.Scheduler
                 {
 
                     serviceState.RabbitRepo.PublishAsync("paymentWakeUp", null);
-                    message+=" Warning : Payment Service has not signalled it is ready sent paymentWakeUp . ";
+                    message += " Warning : Payment Service has not signalled it is ready sent paymentWakeUp . ";
                     _logger.LogWarning(message);
                 }
             }
             catch (Exception e)
             {
-                message+=" Error : Failed to run Payment schedule: Error Was : " + e.Message.ToString(); 
+                message += " Error : Failed to run Payment schedule: Error Was : " + e.Message.ToString();
                 _logger.LogError(message);
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
