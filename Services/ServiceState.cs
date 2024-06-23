@@ -121,7 +121,7 @@ namespace NetworkMonitor.Scheduler.Services
             {
                 _logger.LogInformation($" Success : Got {processorList.Count} processors from state . ");
             }
-            _processorState.ProcessorList = processorList;
+            _processorState.ResetConcurrentProcessorList(processorList);
             //List<ProcessorObj> processorList = new List<ProcessorObj>();
 
             //_config.GetSection("ProcessorList").Bind(processorList);
