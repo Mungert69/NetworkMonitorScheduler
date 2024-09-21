@@ -18,7 +18,7 @@ namespace NetworkMonitor.Scheduler
         {
 
             _logger = logger;
-            string scheduleStr = config.GetValue<string>("AISchedule") ?? "";
+            string scheduleStr = config.GetValue<string>("AISchedule") ?? "0 0 31 2 *"; // Runs at 12:00 AM on February 31st, which is always invalid
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
