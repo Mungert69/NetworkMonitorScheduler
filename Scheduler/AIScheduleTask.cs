@@ -18,7 +18,7 @@ namespace NetworkMonitor.Scheduler
         {
 
             _logger = logger;
-            string scheduleStr = config.GetValue<string>("AISchedule") ?? "0 6 * * *";
+            string scheduleStr = config.GetValue<string>("AISchedule") ?? "";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
