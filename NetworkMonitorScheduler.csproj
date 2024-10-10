@@ -6,7 +6,7 @@
     <PublishProfile>DefaultContainer</PublishProfile>
     <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:8.0</ContainerBaseImage>
     <ContainerRepository>mungert/networkmonitorscheduler</ContainerRepository>
-    <ContainerImageTag>1.7.6</ContainerImageTag>
+    <ContainerImageTag>1.7.7</ContainerImageTag>
 </PropertyGroup>
 
 <PropertyGroup>
@@ -21,8 +21,8 @@
 
   <ItemGroup>
 
-    <PackageReference Include="HostInitActions" Version="1.2.0" />
-    <PackageReference Include="MailKit" Version="4.2.0" />
+    <PackageReference Include="HostInitActions" Version="1.3.1" />
+    <PackageReference Include="MailKit" Version="4.8.0" />
     <PackageReference Include="ncrontab" Version="3.3.3" />
  
    </ItemGroup>
