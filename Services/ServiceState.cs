@@ -102,7 +102,7 @@ namespace NetworkMonitor.Scheduler.Services
             var processorList = new List<ProcessorObj>();
             try
             {
-                _fileRepo.CheckFileExists("ProcessorList", _logger);
+                 _fileRepo.CheckFileExistsWithCreateObject<List<ProcessorObj>>("ProcessorList",new List<ProcessorObj>(), _logger);
                 processorList = _fileRepo.GetStateJson<List<ProcessorObj>>("ProcessorList");
 
             }
