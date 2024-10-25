@@ -40,6 +40,7 @@ namespace NetworkMonitor.Scheduler
                         message += " Success : Sent processorConnect event for appID " + procInst.AppID;
                         try
                         {
+                            connectObj.AuthKey=procInst.AuthKey;
                             serviceState.RabbitRepo.PublishAsync<ProcessorConnectObj>("processorConnect" + procInst.AppID, connectObj);
 
                         }
