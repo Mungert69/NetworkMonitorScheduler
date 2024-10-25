@@ -125,11 +125,17 @@ namespace NetworkMonitor.Scheduler.Services
             //List<ProcessorObj> processorList = new List<ProcessorObj>();
 
             //_config.GetSection("ProcessorList").Bind(processorList);
-            foreach (var processorObj in _processorState.EnabledProcessorList)
+            foreach (var processorObj in _processorState.EnabledProcessorList(true))
             {
-                processorObj.IsReportSent = false;
-                _processorStateChanges.Add(processorObj.AppID, new List<DateTime>());
+                if ( _processorState.SetProcessorObjIsReportSent(processorObj.AppID, false)){
+                     _processorStateChanges.Add(processorObj.AppID, new List<DateTime>());
                 _logger.LogInformation(" Success : added Processor AppID " + processorObj.AppID);
+                }
+                else{
+                     _logger.LogInformation(" Error : failed to set report sent for Processor AppID " + processorObj.AppID);
+               
+                };
+               
             }
             foreach (KeyValuePair<string, List<DateTime>> entry in _processorStateChanges)
             {
@@ -234,10 +240,7 @@ namespace NetworkMonitor.Scheduler.Services
             _isMonitorDataPurgeReportSent = false;
             _isMonitorCheckDataReportSent = false;
             _isPaymentServiceReady = false;
-            _processorState.EnabledProcessorList.ForEach(f =>
-            {
-                f.IsReportSent = false;
-            });
+            _processorState.SetAllProcessorObjsIsReportSent( false);
             var result = new ResultObj();
             result.Success = true;
             result.Message = "Success : Reset Report Sent flags.";
@@ -329,25 +332,23 @@ namespace NetworkMonitor.Scheduler.Services
         }
         public List<ProcessorObj> EnabledProcessorInstances
         {
-            get => _processorState.EnabledProcessorList;
+            get => _processorState.EnabledProcessorList(true);
         }
         public ResultObj SetProcessorReady(ProcessorObj procInst)
         {
             var result = new ResultObj();
             try
             {
-                var processorInstance = _processorState.ProcessorList.FirstOrDefault(f => f.AppID == procInst.AppID);
-                if (processorInstance != null)
+                if (_processorState.SetProcessorObjIsReady(procInst.AppID,procInst.IsReady))
                 {
-                    processorInstance.IsReady = procInst.IsReady;
-                    _processorStateChanges[procInst.AppID].Add(DateTime.UtcNow);
+                     _processorStateChanges[procInst.AppID].Add(DateTime.UtcNow);
                     result.Success = true;
                     result.Message = " Success : Set Processor Ready for AppID " + procInst.AppID + " to " + procInst.IsReady;
                 }
                 else
                 {
                     result.Success = false;
-                    result.Message = " Error  : Failed to find Processor with AppID " + procInst.AppID;
+                    result.Message = " Error  : Failed set IsReady for Processor with AppID " + procInst.AppID;
 
                 }
 
@@ -355,7 +356,7 @@ namespace NetworkMonitor.Scheduler.Services
             catch (Exception e)
             {
                 result.Success = false;
-                result.Message = "Error : to set Processor Ready. Error was : " + e.Message.ToString();
+                result.Message = "Error : Failed to set Processor Ready. Error was : " + e.Message.ToString();
             }
             return result;
         }
@@ -530,7 +531,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result = SendHealthReport(message);
                 _isPaymentServiceReportSent = true;
             }
-            foreach (var procInst in _processorState.EnabledSendAlertProcessorList())
+            foreach (var procInst in _processorState.EnabledSendAlertProcessorList(true))
             {
                 if (_processorStateChanges[procInst.AppID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-_pingScheduleInterval.TotalMinutes * 2) && !procInst.IsReportSent)
                 {
@@ -540,7 +541,7 @@ namespace NetworkMonitor.Scheduler.Services
                     string message = "Failed : Processor with AppID " + procInst.AppID + " has not changed state for " + timeSpan.TotalMinutes + " m ";
                     if (procInst.Owner != "root") result = await SendHealthPublicAgentReport(message, procInst);
                     else result = SendHealthReport(message);
-                    procInst.IsReportSent = true;
+                    if (!_processorState.SetProcessorObjIsReportSent(procInst.AppID, true)) _logger.LogError(" Error : Failed to Set IsReportSent.");
                 }
             }
             return result;
