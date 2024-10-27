@@ -386,7 +386,7 @@ namespace NetworkMonitor.Scheduler.Services
             alertMessage.UserInfo = userInfo;
             alertMessage.SendTrustPilot = false;
             alertMessage.Subject = "Agent down";
-            alertMessage.Message = $"Monitoring service is no longer receiving data from your agent at Location {processorObj.Location} . If you want to continue using the agent. First check the agent is running and has internet connectivity. If it has then try re-authenticating the agent. If you don't want to receive any more alerts that the agent is down. Login to the Free Network Monitor Dashboard (https://freenetworkmonitor.click/dashboard) , goto your profile and untick Send Agent Down Alerts.";
+            alertMessage.Message = $"Monitoring service is no longer receiving data from your agent at Location {processorObj.Location} . If you want to continue using the agent. First check the agent is running and has internet connectivity. If it has then try re-authenticating the agent. If you don't want to receive any more alerts that the agent is down. Login to the Free Network Monitor Dashboard ({AppConstants.FrontendUrl}/dashboard) , goto your profile and untick Send Agent Down Alerts.";
             try
             {
                 await _rabbitRepo.PublishAsync<AlertMessage>("alertMessage", alertMessage);
