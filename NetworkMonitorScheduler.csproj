@@ -5,9 +5,19 @@
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
     <PublishProfile>DefaultContainer</PublishProfile>
     <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:8.0</ContainerBaseImage>
-    <ContainerRepository>mungert/networkmonitorscheduler</ContainerRepository>
+    
     <ContainerImageTag>1.7.7</ContainerImageTag>
 </PropertyGroup>
+<PropertyGroup Condition="'$(Configuration)'=='Release-Dev'">
+    <DefineConstants>DEV</DefineConstants>
+        <Optimize>true</Optimize>
+        <ContainerRepository>mungert/networkmonitorscheduler-dev</ContainerRepository>
+</PropertyGroup>
+ <!-- Conditional AOT and optimization for Release configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <ContainerRepository>mungert/networkmonitorscheduler</ContainerRepository>
+  </PropertyGroup>
 
 <PropertyGroup>
     <Nullable>enable</Nullable>
