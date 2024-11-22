@@ -22,7 +22,7 @@ namespace NetworkMonitor.Scheduler
             firstRun = true;
             _logger = logger;
             string scheduleStr = config.GetValue<string>("PaymentSchedule") ?? "";
-            if (scheduleStr.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(scheduleStr))
             {
                 _disabled = true;
                 scheduleStr = "* * * * *";
