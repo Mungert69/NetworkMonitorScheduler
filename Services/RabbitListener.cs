@@ -75,26 +75,26 @@ namespace NetworkMonitor.Scheduler.Services
             });
 
         }
-        protected override ResultObj DeclareConsumers()
+        protected override async Task<ResultObj> DeclareConsumers()
         {
             var result = new ResultObj();
             try
             {
-                _rabbitMQObjs.ForEach(rabbitMQObj =>
+               foreach (var rabbitMQObj in _rabbitMQObjs)
             {
-                rabbitMQObj.Consumer = new EventingBasicConsumer(rabbitMQObj.ConnectChannel);
+                rabbitMQObj.Consumer = new AsyncEventingBasicConsumer(rabbitMQObj.ConnectChannel);
                 if (rabbitMQObj.ConnectChannel != null)
                 {
                     switch (rabbitMQObj.FuncName)
                     {
                         case "processorReady":
-                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.Received += (model, ea) =>
+                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.ReceivedAsync +=  async(model, ea) =>
                         {
                             try
                             {
                                 result = ProcessorReady(ConvertToObject<ProcessorInitObj>(model, ea));
-                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
                             }
                             catch (Exception ex)
                             {
@@ -104,13 +104,13 @@ namespace NetworkMonitor.Scheduler.Services
                         };
                             break;
                         case "paymentServiceReady":
-                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.Received += (model, ea) =>
+                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
                         {
                             try
                             {
                                 result = PaymentServiceReady(ConvertToObject<PaymentServiceInitObj>(model, ea));
-                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
                             }
                             catch (Exception ex)
                             {
@@ -120,13 +120,13 @@ namespace NetworkMonitor.Scheduler.Services
                         };
                             break;
                         case "alertServiceReady":
-                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.Received += (model, ea) =>
+                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
                         {
                             try
                             {
                                 result = AlertServiceReady(ConvertToObject<AlertServiceInitObj>(model, ea));
-                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
                             }
                             catch (Exception ex)
                             {
@@ -136,13 +136,13 @@ namespace NetworkMonitor.Scheduler.Services
                         };
                             break;
                         case "monitorServiceReady":
-                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.Received += (model, ea) =>
+                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.ReceivedAsync +=  async (model, ea) =>
                         {
                             try
                             {
                                 result = MonitorServiceReady(ConvertToObject<MonitorServiceInitObj>(model, ea));
-                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
                             }
                             catch (Exception ex)
                             {
@@ -152,13 +152,13 @@ namespace NetworkMonitor.Scheduler.Services
                         };
                             break;
                         case "monitorDataReady":
-                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.Received += (model, ea) =>
+                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
                         {
                             try
                             {
                                 result = MonitorDataReady(ConvertToObject<MonitorDataInitObj>(model, ea));
-                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
                             }
                             catch (Exception ex)
                             {
@@ -168,13 +168,13 @@ namespace NetworkMonitor.Scheduler.Services
                         };
                             break;
                         case "predictServiceReady":
-                            rabbitMQObj.ConnectChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.Received += (model, ea) =>
+                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                            rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
                         {
                             try
                             {
                                 result = PredictServiceReady(ConvertToObject<MonitorMLInitObj>(model, ea));
-                                rabbitMQObj.ConnectChannel.BasicAck(ea.DeliveryTag, false);
+                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
                             }
                             catch (Exception ex)
                             {
@@ -186,7 +186,7 @@ namespace NetworkMonitor.Scheduler.Services
 
                     }
                 }
-            });
+            }
                 result.Success = true;
                 result.Message += " Success : Declared all consumers ";
             }
