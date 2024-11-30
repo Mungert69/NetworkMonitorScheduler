@@ -20,6 +20,8 @@ namespace NetworkMonitor.Scheduler.Services
         ResultObj AlertServiceReady(AlertServiceInitObj alertObj);
         ResultObj MonitorServiceReady(MonitorServiceInitObj serviveObj);
         ResultObj MonitorDataReady(MonitorDataInitObj dataObj);
+                Task Shutdown();
+        Task<ResultObj> Setup();
     }
     public class RabbitListener : RabbitListenerBase, IRabbitListener
     {

@@ -63,17 +63,21 @@ namespace NetworkMonitor
             services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));
             services.AddControllers();
             services.AddAsyncServiceInitialization()
-                   .AddInitAction<IServiceState>(async (serviceState) =>
+                .AddInitAction<IRabbitRepo>(async (rabbitRepo) =>
+                    {
+                        await rabbitRepo.ConnectAndSetUp();
+                    })
+                .AddInitAction<IServiceState>(async (serviceState) =>
                    {
                        await serviceState.Init();
                    })
-                   .AddInitAction<IRabbitListener>((rabbitListener) =>
+                .AddInitAction<IRabbitListener>(async (rabbitListener) =>
                     {
-                        return Task.CompletedTask; 
+                        await rabbitListener.Setup();
                     })
-                    .AddInitAction<IProcessorStateRabbitListner>((processorStateRabbitListener) =>
+                .AddInitAction<IProcessorStateRabbitListner>(async (processorStateRabbitListener) =>
                     {
-                        return Task.CompletedTask;
+                         await processorStateRabbitListener.Setup();
                     });
         }
        
