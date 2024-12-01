@@ -30,7 +30,6 @@ namespace NetworkMonitor.Scheduler.Services
 
         {
             _serviceState = serviceState;
-            Setup();
         }
 
 
