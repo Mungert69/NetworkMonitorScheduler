@@ -27,17 +27,19 @@ namespace NetworkMonitor.Scheduler
         {
             string message = " SCHEDULE : Starting Ping schedule . ";
             bool success = true;
+            int count=0;
             IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
                 ProcessorConnectObj connectObj = new ProcessorConnectObj();
                 connectObj.NextRunInterval = RunScheduleInterval();
+                
                 foreach (ProcessorObj procInst in serviceState.EnabledProcessorInstances)
                 {
-                    if (procInst.IsReady)
+                    if (procInst.IsReady && procInst.IsEnabled)
                     {
-                        message += " Success : Sent processorConnect event for appID " + procInst.AppID;
+                        //message += " Success : Sent processorConnect event for appID " + procInst.AppID;
                         try
                         {
                             connectObj.AuthKey=procInst.AuthKey;
@@ -49,7 +51,7 @@ namespace NetworkMonitor.Scheduler
                             _logger.LogError($" Error could not publish event processorConnect {procInst.AppID}");
                             success = false;
                         }
-
+                        count++;
                         procInst.IsReady = false;
                     }
                     else
@@ -73,6 +75,7 @@ namespace NetworkMonitor.Scheduler
                 message += " Error : Failed to run Ping schedule : Error Was : " + e.Message.ToString();
                 success = false;
             }
+            message+=$"Sent connect events to {count} agents";
             if (success) _logger.LogInformation(message);
             else _logger.LogError(message);
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
