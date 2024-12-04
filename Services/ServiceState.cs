@@ -504,7 +504,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result = SendHealthReport(message);
                 _isPredictServiceReportSent = true;
             }
-            if (_monitorCheckServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_monitorCheckInterval.TotalMinutes * 2) && !_isMonitorCheckServiceReportSent)
+            if (_monitorCheckServiceStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_monitorCheckInterval.TotalMinutes * 3) && !_isMonitorCheckServiceReportSent)
             {
                 //alert MonitorService not changing state
                 result.Success = false;
@@ -513,7 +513,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result = SendHealthReport(message);
                 _isMonitorCheckServiceReportSent = true;
             }
-            if (_monitorCheckDataStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_dataCheckInterval.TotalMinutes * 2) && !_isMonitorCheckDataReportSent)
+            if (_monitorCheckDataStateChanges.LastOrDefault() < DateTime.UtcNow.AddMinutes(-_dataCheckInterval.TotalMinutes * 3) && !_isMonitorCheckDataReportSent)
             {
                 //alert MonitorData not changing state
                 result.Success = false;
