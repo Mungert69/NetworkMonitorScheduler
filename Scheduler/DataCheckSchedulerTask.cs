@@ -39,13 +39,13 @@ namespace NetworkMonitor.Scheduler
                     };
                     serviceState.RabbitRepo.PublishAsync<MonitorDataInitObj>("dataCheck", serviceObj);
 
-                    message += " Warning : DataCheck Service has not signalled it is ready . Sent dataCheck ";
-                    _logger.LogWarning(message);
+                    message += " Success : Sent dataCheck to Date Service ";
+                    _logger.LogInformation(message);
 
                 }
                 else
                 {
-                    message+=" Success : Ran DataCheck schedule . ";
+                    message+=" Success : Received Data Service dataCheck response. ";
                     _logger.LogInformation(message);
                     serviceState.IsMonitorCheckDataReady = false;
                 }

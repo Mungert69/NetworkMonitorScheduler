@@ -29,19 +29,22 @@ namespace NetworkMonitor.Scheduler
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
             {
-                        if (serviceState.IsMonitorCheckServiceReady)
-                        {
-                            serviceState.RabbitRepo.PublishAsync( "monitorCheck", null );
-                            message+=" Success : Sent monitorCheck event . ";
-                            _logger.LogInformation(message);
-                            serviceState.IsMonitorCheckServiceReady = false;
-                        }
-                        else
-                        {
-                            serviceState.RabbitRepo.PublishAsync("monitorCheck",null );
-                           message+=" Warning : MonitorCheck Service has not signalled it is ready sent monitorCheck . ";
-                            _logger.LogWarning(message);
-                        }
+                  if (!serviceState.IsMonitorCheckServiceReady)
+                {
+                 
+                   serviceState.RabbitRepo.PublishAsync( "monitorCheck", null );
+                          
+                    message += " Success : Sent monitorCheck to Monitor Service ";
+                    _logger.LogInformation(message);
+
+                }
+                else
+                {
+                    message+=" Success : Received Monitor Service monitorCheck response. ";
+                    _logger.LogInformation(message);
+                    serviceState.IsMonitorCheckServiceReady = false;
+                }
+                    
             }
             catch (Exception e)
             {
