@@ -348,3 +348,4 @@ appsettings.Development.json
 appsettings.json
 ProcessorList
 /.mono
+.env
