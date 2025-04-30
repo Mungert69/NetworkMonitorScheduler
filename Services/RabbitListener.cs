@@ -20,7 +20,7 @@ namespace NetworkMonitor.Scheduler.Services
         ResultObj AlertServiceReady(AlertServiceInitObj alertObj);
         ResultObj MonitorServiceReady(MonitorServiceInitObj serviveObj);
         ResultObj MonitorDataReady(MonitorDataInitObj dataObj);
-                Task Shutdown();
+        Task Shutdown();
         Task<ResultObj> Setup();
     }
     public class RabbitListener : RabbitListenerBase, IRabbitListener
@@ -81,113 +81,123 @@ namespace NetworkMonitor.Scheduler.Services
             var result = new ResultObj();
             try
             {
-               foreach (var rabbitMQObj in _rabbitMQObjs)
-            {
-                rabbitMQObj.Consumer = new AsyncEventingBasicConsumer(rabbitMQObj.ConnectChannel);
-                if (rabbitMQObj.ConnectChannel != null)
-                {
-                    switch (rabbitMQObj.FuncName)
-                    {
-                        case "processorReady":
-                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.ReceivedAsync +=  async(model, ea) =>
-                        {
-                            try
-                            {
-                                result = ProcessorReady(ConvertToObject<ProcessorInitObj>(model, ea));
-                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.processorReady " + ex.Message);
-                            }
+                await Parallel.ForEachAsync(_rabbitMQObjs, async (rabbitMQObj, cancellationToken) =>
+                 {
 
-                        };
-                            break;
-                        case "paymentServiceReady":
-                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
-                        {
-                            try
-                            {
-                                result = PaymentServiceReady(ConvertToObject<PaymentServiceInitObj>(model, ea));
-                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.paymentServiceReady " + ex.Message);
-                            }
+                     if (rabbitMQObj.ConnectChannel != null)
+                     {
 
-                        };
-                            break;
-                        case "alertServiceReady":
-                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
-                        {
-                            try
-                            {
-                                result = AlertServiceReady(ConvertToObject<AlertServiceInitObj>(model, ea));
-                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.alertServiceReady " + ex.Message);
-                            }
+                         rabbitMQObj.Consumer = new AsyncEventingBasicConsumer(rabbitMQObj.ConnectChannel);
+                         await rabbitMQObj.ConnectChannel.BasicConsumeAsync(
+                                 queue: rabbitMQObj.QueueName,
+                                 autoAck: false,
+                                 consumer: rabbitMQObj.Consumer
+                             );
 
-                        };
-                            break;
-                        case "monitorServiceReady":
-                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.ReceivedAsync +=  async (model, ea) =>
-                        {
-                            try
-                            {
-                                result = MonitorServiceReady(ConvertToObject<MonitorServiceInitObj>(model, ea));
-                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
-                            }
 
-                        };
-                            break;
-                        case "monitorDataReady":
-                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
-                        {
-                            try
+                         switch (rabbitMQObj.FuncName)
+                         {
+                             case "processorReady":
+                                 await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                                 rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
                             {
-                                result = MonitorDataReady(ConvertToObject<MonitorDataInitObj>(model, ea));
-                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
-                            }
+                                try
+                                {
+                                    result = ProcessorReady(ConvertToObject<ProcessorInitObj>(model, ea));
+                                    await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(" Error : RabbitListener.DeclareConsumers.processorReady " + ex.Message);
+                                }
 
-                        };
-                            break;
-                        case "predictServiceReady":
-                            await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
-                            rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
-                        {
-                            try
+                            };
+                                 break;
+                             case "paymentServiceReady":
+                                 await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                                 rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
                             {
-                                result = PredictServiceReady(ConvertToObject<MonitorMLInitObj>(model, ea));
-                                await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
-                            }
-                            catch (Exception ex)
+                                try
+                                {
+                                    result = PaymentServiceReady(ConvertToObject<PaymentServiceInitObj>(model, ea));
+                                    await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(" Error : RabbitListener.DeclareConsumers.paymentServiceReady " + ex.Message);
+                                }
+
+                            };
+                                 break;
+                             case "alertServiceReady":
+                                 await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                                 rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
                             {
-                                _logger.LogError(" Error : RabbitListener.DeclareConsumers.predictServiceReady " + ex.Message);
-                            }
+                                try
+                                {
+                                    result = AlertServiceReady(ConvertToObject<AlertServiceInitObj>(model, ea));
+                                    await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(" Error : RabbitListener.DeclareConsumers.alertServiceReady " + ex.Message);
+                                }
 
-                        };
-                            break;
+                            };
+                                 break;
+                             case "monitorServiceReady":
+                                 await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                                 rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
+                            {
+                                try
+                                {
+                                    result = MonitorServiceReady(ConvertToObject<MonitorServiceInitObj>(model, ea));
+                                    await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
+                                }
 
-                    }
-                }
-            }
+                            };
+                                 break;
+                             case "monitorDataReady":
+                                 await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                                 rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
+                            {
+                                try
+                                {
+                                    result = MonitorDataReady(ConvertToObject<MonitorDataInitObj>(model, ea));
+                                    await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(" Error : RabbitListener.DeclareConsumers.monitorServiceReady " + ex.Message);
+                                }
+
+                            };
+                                 break;
+                             case "predictServiceReady":
+                                 await rabbitMQObj.ConnectChannel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+                                 rabbitMQObj.Consumer.ReceivedAsync += async (model, ea) =>
+                            {
+                                try
+                                {
+                                    result = PredictServiceReady(ConvertToObject<MonitorMLInitObj>(model, ea));
+                                    await rabbitMQObj.ConnectChannel.BasicAckAsync(ea.DeliveryTag, false);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(" Error : RabbitListener.DeclareConsumers.predictServiceReady " + ex.Message);
+                                }
+
+                            };
+                                 break;
+
+                         }
+                     }
+
+                 });
                 result.Success = true;
                 result.Message += " Success : Declared all consumers ";
             }
@@ -369,7 +379,7 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
-  public ResultObj PredictServiceReady([FromBody] MonitorMLInitObj? serviceObj)
+        public ResultObj PredictServiceReady([FromBody] MonitorMLInitObj? serviceObj)
         {
             ResultObj result = new ResultObj();
             result.Success = false;
