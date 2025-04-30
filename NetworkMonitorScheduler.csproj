@@ -6,7 +6,7 @@
     <PublishProfile>DefaultContainer</PublishProfile>
     <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:9.0</ContainerBaseImage>
     
-    <ContainerImageTag>1.9.3</ContainerImageTag>
+    <ContainerImageTag>1.9.4</ContainerImageTag>
 </PropertyGroup>
 <PropertyGroup Condition="'$(Configuration)'=='Release-Dev'">
     <DefineConstants>DEV</DefineConstants>
