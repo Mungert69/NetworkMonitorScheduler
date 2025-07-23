@@ -1,4 +1,5 @@
 using NetworkMonitor.Scheduler;
+using NetworkMonitor.Objects;
 using NetworkMonitor.Scheduler.Services;
 using NetworkMonitor.Objects.Factory;
 using Microsoft.AspNetCore.Builder;
@@ -30,16 +31,21 @@ namespace NetworkMonitor
         public void ConfigureServices(IServiceCollection services)
         {
             _services = services;
-             services.AddLogging(builder =>
-               {
-                   builder.AddSimpleConsole(options =>
-                        {
-                            options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
-                            options.IncludeScopes = true;
-                        });
-               });
+            services.AddLogging(builder =>
+              {
+                  builder.AddSimpleConsole(options =>
+                       {
+                           options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+                           options.IncludeScopes = true;
+                       });
+              });
 
             services.AddSingleton<ISystemParamsHelper, SystemParamsHelper>();
+            services.AddSingleton<SystemParams>(sp =>
+{
+   var systemParamsHelper = sp.GetRequiredService<ISystemParamsHelper>();
+   return systemParamsHelper.GetSystemParams();
+});
             services.AddSingleton<IHostedService, DataSaveScheduleTask>();
             services.AddSingleton<IHostedService, MonitorCheckScheduleTask>();
             services.AddSingleton<IHostedService, AlertScheduleTask>();
@@ -48,17 +54,17 @@ namespace NetworkMonitor
             services.AddSingleton<IHostedService, PaymentScheduleTask>();
             services.AddSingleton<IHostedService, DataCheckScheduleTask>();
             services.AddSingleton<IHostedService, DataPurgeScheduleTask>();
-            services.AddSingleton<IHostedService,  ReportScheduleTask>();
+            services.AddSingleton<IHostedService, ReportScheduleTask>();
             services.AddSingleton<IHostedService, HealthCheckScheduleTask>();
             services.AddSingleton<IHostedService, ResetScheduleTask>();
             services.AddSingleton<IHostedService, AIScheduleTask>();
             services.AddSingleton<IRabbitRepo, RabbitRepo>();
-             services.AddSingleton<IFileRepo, FileRepo>();        
+            services.AddSingleton<IFileRepo, FileRepo>();
             services.AddSingleton<IRabbitListener, RabbitListener>();
             services.AddSingleton<IServiceState, ServiceState>();
             services.AddSingleton<IProcessorStateRabbitListner, ProcessorStateRabbitListner>();
             services.AddSingleton<IProcessorState, ProcessorState>();
-          
+
             services.AddSingleton(_cancellationTokenSource);
             services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));
             services.AddControllers();
@@ -77,9 +83,9 @@ namespace NetworkMonitor
                     })
                 .AddInitAction<IProcessorStateRabbitListner>(async (processorStateRabbitListener) =>
                     {
-                         await processorStateRabbitListener.Setup();
+                        await processorStateRabbitListener.Setup();
                     });
         }
-       
+
     }
 }
