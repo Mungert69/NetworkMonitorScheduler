@@ -26,16 +26,16 @@ namespace NetworkMonitor.Scheduler.Services
     public class RabbitListener : RabbitListenerBase, IRabbitListener
     {
         private IServiceState _serviceState;
-        public RabbitListener(IServiceState serviceState, ILogger<RabbitListenerBase> logger, ISystemParamsHelper systemParamsHelper) : base(logger, DeriveSystemUrl(systemParamsHelper))
+        public RabbitListener(IServiceState serviceState, ILogger<RabbitListenerBase> logger, SystemParams systemParams) : base(logger, DeriveSystemUrl(systemParams))
 
         {
             _serviceState = serviceState;
         }
 
 
-        private static SystemUrl DeriveSystemUrl(ISystemParamsHelper systemParamsHelper)
+        private static SystemUrl DeriveSystemUrl(SystemParams systemParams)
         {
-            return systemParamsHelper.GetSystemParams().ThisSystemUrl;
+            return systemParams.ThisSystemUrl;
         }
         protected override void InitRabbitMQObjs()
         {
