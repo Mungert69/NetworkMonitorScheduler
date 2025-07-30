@@ -11,12 +11,12 @@ namespace NetworkMonitor.Scheduler
 {
     public class PredictScheduleTask : ScheduledProcessor
     {
-        private bool firstRun;
+ 
         private ILogger _logger;
         public PredictScheduleTask(ILogger<PredictScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             _logger = logger;
-            firstRun = true;
+        
             string scheduleStr = config.GetValue<string>("PredictSchedule") ?? "*/5 * * * *";
             updateSchedule(scheduleStr);
         }

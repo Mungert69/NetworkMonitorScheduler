@@ -14,11 +14,10 @@ namespace NetworkMonitor.Scheduler
 {
     public class PingScheduleTask : ScheduledProcessor
     {
-        private bool firstRun;
         private ILogger _logger;
         public PingScheduleTask(ILogger<PingScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-            firstRun = true;
+ 
             _logger = logger;
             string scheduleStr = config.GetValue<string>("PingSchedule") ?? "* * * * *";
             updateSchedule(scheduleStr);
@@ -48,7 +47,7 @@ namespace NetworkMonitor.Scheduler
                         }
                         catch (Exception e)
                         {
-                            _logger.LogError($" Error could not publish event processorConnect {procInst.AppID}");
+                            _logger.LogError($" Error could not publish event processorConnect {procInst.AppID} . Error was :{e.Message}");
                             success = false;
                         }
                         count++;

@@ -13,11 +13,11 @@ namespace NetworkMonitor.Scheduler
 {
     public class MonitorCheckScheduleTask: ScheduledProcessor
     {
-        private bool firstRun;
+
         private ILogger _logger;
         public MonitorCheckScheduleTask(ILogger<MonitorCheckScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-            firstRun = true;
+  
              _logger = logger;
             string scheduleStr = config.GetValue<string>("MonitorCheckSchedule") ?? "* * * * *";
             updateSchedule(scheduleStr);
