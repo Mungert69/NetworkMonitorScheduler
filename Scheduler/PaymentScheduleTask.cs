@@ -14,12 +14,12 @@ namespace NetworkMonitor.Scheduler
 {
     public class PaymentScheduleTask : ScheduledProcessor
     {
-        private bool firstRun;
+ 
         private ILogger _logger;
         private bool _disabled = false;
         public PaymentScheduleTask(ILogger<PaymentScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-            firstRun = true;
+       
             _logger = logger;
             string scheduleStr = config.GetValue<string>("PaymentSchedule") ?? "";
             if (string.IsNullOrEmpty(scheduleStr))

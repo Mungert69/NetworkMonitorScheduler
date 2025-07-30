@@ -17,7 +17,7 @@ namespace NetworkMonitor.Scheduler.Services
 {
     public class ProcessorInstance
     {
-        public string ID;
+        public string ID="";
         public bool IsReady = true;
         public bool IsReportSent = false;
     }

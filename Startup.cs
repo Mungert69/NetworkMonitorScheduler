@@ -20,7 +20,9 @@ namespace NetworkMonitor
     public class Startup
     {
         private readonly CancellationTokenSource _cancellationTokenSource;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         public Startup(IConfiguration configuration)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         {
             _cancellationTokenSource = new CancellationTokenSource();
             Configuration = configuration;

@@ -11,12 +11,11 @@ namespace NetworkMonitor.Scheduler
 {
     public class AlertScheduleTask : ScheduledProcessor
     {
-        private bool firstRun;
-        private ILogger _logger;
+             private ILogger _logger;
         public AlertScheduleTask(ILogger<AlertScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             _logger = logger;
-            firstRun = true;
+       
             string scheduleStr = config.GetValue<string>("AlertSchedule") ?? "* * * * *";
             updateSchedule(scheduleStr);
         }
