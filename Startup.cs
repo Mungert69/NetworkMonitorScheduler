@@ -45,8 +45,8 @@ namespace NetworkMonitor
             services.AddSingleton<ISystemParamsHelper, SystemParamsHelper>();
             services.AddSingleton<SystemParams>(sp =>
 {
-   var systemParamsHelper = sp.GetRequiredService<ISystemParamsHelper>();
-   return systemParamsHelper.GetSystemParams();
+    var systemParamsHelper = sp.GetRequiredService<ISystemParamsHelper>();
+    return systemParamsHelper.GetSystemParams();
 });
             services.AddSingleton<IHostedService, DataSaveScheduleTask>();
             services.AddSingleton<IHostedService, MonitorCheckScheduleTask>();
@@ -61,7 +61,12 @@ namespace NetworkMonitor
             services.AddSingleton<IHostedService, ResetScheduleTask>();
             services.AddSingleton<IHostedService, AIScheduleTask>();
             services.AddSingleton<IRabbitRepo, RabbitRepo>();
-            services.AddSingleton<IFileRepo, FileRepo>();
+            services.AddSingleton<IFileRepo, FileRepo>(
+                 provider =>
+                 {
+                     return new FileRepo(false, "./state");
+                 }
+             );
             services.AddSingleton<IRabbitListener, RabbitListener>();
             services.AddSingleton<IServiceState, ServiceState>();
             services.AddSingleton<IProcessorStateRabbitListner, ProcessorStateRabbitListner>();
