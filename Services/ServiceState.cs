@@ -33,6 +33,7 @@ namespace NetworkMonitor.Scheduler.Services
         bool IsMonitorDataPurgeReady { get; set; }
         List<ProcessorObj> EnabledProcessorInstances { get; }
         ResultObj SetProcessorReady(ProcessorObj procInst);
+        bool IsSystemProcessor(string appId);
         Task <ResultObj> CheckHealth();
         ResultObj SendHealthReport(string reportMessage);
         ResultObj ResetReportSent();
@@ -333,6 +334,11 @@ namespace NetworkMonitor.Scheduler.Services
         public List<ProcessorObj> EnabledProcessorInstances
         {
             get => _processorState.EnabledProcessorList(true);
+        }
+        public bool IsSystemProcessor(string appId)
+        {
+            var processor = _processorState.GetProcessorFromID(appId, false);
+            return processor != null && !processor.IsPrivate;
         }
         public ResultObj SetProcessorReady(ProcessorObj procInst)
         {

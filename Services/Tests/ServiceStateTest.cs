@@ -111,6 +111,29 @@ namespace NetworkMonitorScheduler.Tests.Services
         }
 
         [Fact]
+        public void IsSystemProcessor_ReturnsTrueForSystemProcessor()
+        {
+            var serviceState = CreateServiceState();
+            var processor = new ProcessorObj { AppID = "system", IsPrivate = false };
+            _processorStateMock.Setup(p => p.GetProcessorFromID("system", false)).Returns(processor);
+
+            var isSystem = serviceState.IsSystemProcessor("system");
+
+            Assert.True(isSystem);
+        }
+
+        [Fact]
+        public void IsSystemProcessor_ReturnsFalseForUserProcessorOrMissing()
+        {
+            var serviceState = CreateServiceState();
+            var processor = new ProcessorObj { AppID = "user", IsPrivate = true };
+            _processorStateMock.Setup(p => p.GetProcessorFromID("user", false)).Returns(processor);
+
+            Assert.False(serviceState.IsSystemProcessor("user"));
+            Assert.False(serviceState.IsSystemProcessor("missing"));
+        }
+
+        [Fact]
         public void SendHealthReport_ReturnsResult()
         {
             var serviceState = CreateServiceState();
