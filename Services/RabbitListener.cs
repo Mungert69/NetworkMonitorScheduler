@@ -232,7 +232,22 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += resultProcesoor.Message;
                 result.Success = resultProcesoor.Success;
 
-                _logger.LogInformation(result.Message);
+                if (!resultProcesoor.Success)
+                {
+                    var isSystemProcessor = _serviceState.IsSystemProcessor(procInst.AppID);
+                    if (isSystemProcessor)
+                    {
+                        _logger.LogError(result.Message);
+                    }
+                    else
+                    {
+                        _logger.LogWarning(result.Message);
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation(result.Message);
+                }
             }
             catch (Exception e)
             {
