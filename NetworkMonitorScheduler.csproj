@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp10.0</TargetFramework>
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+         <RollForward>Minor</RollForward>
+
     <PublishProfile>DefaultContainer</PublishProfile>
     <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:10.0</ContainerBaseImage>
          <StartupObject>NetworkMonitor.Scheduler.Program</StartupObject>
