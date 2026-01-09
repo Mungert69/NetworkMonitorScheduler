@@ -1,15 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp10.0</TargetFramework>
-    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
-         <RollForward>Minor</RollForward>
+    <TargetFramework>net10.0</TargetFramework>
+
+    <!-- Build & containerize for BOTH arches -->
+    <RuntimeIdentifiers>linux-x64;linux-arm64</RuntimeIdentifiers>
+    <ContainerRuntimeIdentifiers>linux-x64;linux-arm64</ContainerRuntimeIdentifiers>
 
     <PublishProfile>DefaultContainer</PublishProfile>
     <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:10.0</ContainerBaseImage>
-         <StartupObject>NetworkMonitor.Scheduler.Program</StartupObject>
-    <ContainerImageTag>1.11.0</ContainerImageTag>
-</PropertyGroup>
+    <ContainerImageTag>1.11.1</ContainerImageTag>
+    <ContainerImageFormat>OCI</ContainerImageFormat>
+
+    <RollForward>Minor</RollForward>
+    <StartupObject>NetworkMonitor.Scheduler.Program</StartupObject>
+  </PropertyGroup>
+
+
 <PropertyGroup Condition="'$(Configuration)'=='Release-Dev'">
     <DefineConstants>DEV</DefineConstants>
         <Optimize>true</Optimize>
