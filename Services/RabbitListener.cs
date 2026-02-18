@@ -222,7 +222,8 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += " Error : processorObj is null .";
                 return result;
             }
-            if (string.IsNullOrWhiteSpace(CurrentPublisherUserId))
+            bool enforcePublisherIdentity = _systemUrl.RequirePublisherUserId;
+            if (enforcePublisherIdentity && string.IsNullOrWhiteSpace(CurrentPublisherUserId))
             {
                 result.Success = false;
                 result.Message += " Error : publisher identity is missing.";
@@ -237,7 +238,7 @@ namespace NetworkMonitor.Scheduler.Services
             bool isSharedPublisher =
                 string.Equals(CurrentPublisherUserId, "usersetup", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(CurrentPublisherUserId, "default", StringComparison.OrdinalIgnoreCase);
-            if (!isSharedPublisher &&
+            if (enforcePublisherIdentity && !isSharedPublisher &&
                 !processorObj.AppID.StartsWith(CurrentPublisherUserId + "-", StringComparison.Ordinal))
             {
                 result.Success = false;
