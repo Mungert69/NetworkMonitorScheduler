@@ -222,6 +222,28 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += " Error : processorObj is null .";
                 return result;
             }
+            if (string.IsNullOrWhiteSpace(CurrentPublisherUserId))
+            {
+                result.Success = false;
+                result.Message += " Error : publisher identity is missing.";
+                return result;
+            }
+            if (string.IsNullOrWhiteSpace(processorObj.AppID))
+            {
+                result.Success = false;
+                result.Message += " Error : AppID is missing.";
+                return result;
+            }
+            bool isSharedPublisher =
+                string.Equals(CurrentPublisherUserId, "usersetup", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(CurrentPublisherUserId, "default", StringComparison.OrdinalIgnoreCase);
+            if (!isSharedPublisher &&
+                !processorObj.AppID.StartsWith(CurrentPublisherUserId + "-", StringComparison.Ordinal))
+            {
+                result.Success = false;
+                result.Message += $" Error : AppID '{processorObj.AppID}' is not bound to publisher '{CurrentPublisherUserId}'.";
+                return result;
+            }
 
             try
             {
