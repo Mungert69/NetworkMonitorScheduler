@@ -215,34 +215,31 @@ namespace NetworkMonitor.Scheduler.Services
         {
             ResultObj result = new ResultObj();
             result.Success = false;
-            result.Message = "MessageAPI : ProcessorrReady : ";
+            result.Message = "MessageAPI : ProcessorReady : ";
             if (processorObj == null)
             {
                 result.Success = false;
                 result.Message += " Error : processorObj is null .";
+                _logger.LogWarning(result.Message);
                 return result;
             }
             bool enforcePublisherIdentity = _systemUrl.RequirePublisherUserId;
-            if (enforcePublisherIdentity && string.IsNullOrWhiteSpace(CurrentPublisherUserId))
-            {
-                result.Success = false;
-                result.Message += " Error : publisher identity is missing.";
-                return result;
-            }
             if (string.IsNullOrWhiteSpace(processorObj.AppID))
             {
                 result.Success = false;
                 result.Message += " Error : AppID is missing.";
+                _logger.LogWarning(result.Message);
                 return result;
             }
-            bool isSharedPublisher =
-                string.Equals(CurrentPublisherUserId, "usersetup", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(CurrentPublisherUserId, "default", StringComparison.OrdinalIgnoreCase);
-            if (enforcePublisherIdentity && !isSharedPublisher &&
-                !processorObj.AppID.StartsWith(CurrentPublisherUserId + "-", StringComparison.Ordinal))
+            var isSystemProcessor = _serviceState.IsSystemProcessor(processorObj.AppID);
+            if (enforcePublisherIdentity && !isSystemProcessor && !ValidatePublisherIdentityForApp(
+                result,
+                processorObj.AppID,
+                "ProcessorReady",
+                allowUserSetupPublisher: true,
+                allowDefaultPublisher: true))
             {
-                result.Success = false;
-                result.Message += $" Error : AppID '{processorObj.AppID}' is not bound to publisher '{CurrentPublisherUserId}'.";
+                _logger.LogWarning(result.Message);
                 return result;
             }
 
@@ -251,14 +248,14 @@ namespace NetworkMonitor.Scheduler.Services
                 var procInst = new ProcessorObj();
                 procInst.AppID = processorObj.AppID;
                 procInst.IsReady = processorObj.IsProcessorReady;
-                var resultProcesoor = _serviceState.SetProcessorReady(procInst);
-                result.Message += resultProcesoor.Message;
-                result.Success = resultProcesoor.Success;
+                var resultProcessor = _serviceState.SetProcessorReady(procInst);
+                result.Message += resultProcessor.Message;
+                result.Success = resultProcessor.Success;
 
-                if (!resultProcesoor.Success)
+                if (!resultProcessor.Success)
                 {
-                    var isSystemProcessor = _serviceState.IsSystemProcessor(procInst.AppID);
-                    if (isSystemProcessor)
+                    var isSystemProcessorFailure = _serviceState.IsSystemProcessor(procInst.AppID);
+                    if (isSystemProcessorFailure)
                     {
                         _logger.LogError(result.Message);
                     }
