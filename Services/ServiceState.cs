@@ -93,6 +93,7 @@ namespace NetworkMonitor.Scheduler.Services
             _processorState = processorState;
             _processorState.OnAppIDAdded += HandleAppIDAdded;
             _systemParams = systemParamsHelper.GetSystemParams();
+            _logger.LogDebug("ServiceState ctor params: SystemParams={SystemParams}", _systemParams);
             _alertServiceStateChanges.Add(DateTime.UtcNow);
             _predictServiceStateChanges.Add(DateTime.UtcNow);
             _paymentServiceStateChanges.Add(DateTime.UtcNow);
