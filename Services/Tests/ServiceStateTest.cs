@@ -111,6 +111,25 @@ namespace NetworkMonitorScheduler.Tests.Services
         }
 
         [Fact]
+        public void SetProcessorReady_CreatesStateChangeEntryWhenMissing()
+        {
+            var serviceState = CreateServiceState();
+            var proc = new ProcessorObj { AppID = "new-app-id", IsReady = true };
+            _processorStateMock.Setup(p => p.SetProcessorObjIsReady(proc.AppID, proc.IsReady)).Returns(true);
+
+            var result = serviceState.SetProcessorReady(proc);
+
+            Assert.True(result.Success);
+
+            var field = typeof(ServiceState).GetField("_processorStateChanges", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.NotNull(field);
+            var dict = field.GetValue(serviceState) as Dictionary<string, List<DateTime>>;
+            Assert.NotNull(dict);
+            Assert.True(dict!.ContainsKey(proc.AppID));
+            Assert.True(dict[proc.AppID].Count > 0);
+        }
+
+        [Fact]
         public void IsSystemProcessor_ReturnsTrueForSystemProcessor()
         {
             var serviceState = CreateServiceState();
