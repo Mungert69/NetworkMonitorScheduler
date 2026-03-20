@@ -172,21 +172,9 @@ namespace NetworkMonitor.Scheduler.Services
             result.Success = true;
             try
             {
-
-                var isExists = _processorStateChanges[appID];
-                if (isExists != null)
-                {
-                    _processorStateChanges[appID].Add(DateTime.UtcNow);
-                    result.Message += $" Success: Updated StateChange in processorStateChange for AppID {appID} . ";
-
-                }
-                else
-                {
-                    _processorStateChanges.Add(appID, new List<DateTime>());
-                    _processorStateChanges[appID].Add(DateTime.UtcNow);
-                    result.Message += $" Success : Added new AppID to processorStateChanges for AppID {appID} . ";
-
-                }
+                var stateChanges = EnsureProcessorStateChangeEntry(appID);
+                stateChanges.Add(DateTime.UtcNow);
+                result.Message += $" Success : Added/updated AppID in processorStateChanges for AppID {appID} . ";
 
             }
             catch (Exception e)
@@ -348,7 +336,7 @@ namespace NetworkMonitor.Scheduler.Services
             {
                 if (_processorState.SetProcessorObjIsReady(procInst.AppID,procInst.IsReady))
                 {
-                     _processorStateChanges[procInst.AppID].Add(DateTime.UtcNow);
+                    EnsureProcessorStateChangeEntry(procInst.AppID).Add(DateTime.UtcNow);
                     result.Success = true;
                     result.Message = " Success : Set Processor Ready for AppID " + procInst.AppID + " to " + procInst.IsReady;
                 }
@@ -366,6 +354,16 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message = "Error : Failed to set Processor Ready. Error was : " + e.Message.ToString();
             }
             return result;
+        }
+
+        private List<DateTime> EnsureProcessorStateChangeEntry(string appId)
+        {
+            if (!_processorStateChanges.TryGetValue(appId, out var stateChanges) || stateChanges == null)
+            {
+                stateChanges = new List<DateTime>();
+                _processorStateChanges[appId] = stateChanges;
+            }
+            return stateChanges;
         }
 
         private async Task<ResultObj> SendHealthPublicAgentReport(string reportMessage, ProcessorObj processorObj)
@@ -540,11 +538,18 @@ namespace NetworkMonitor.Scheduler.Services
             }
             foreach (var procInst in _processorState.EnabledSendAlertProcessorList(true))
             {
-                if (_processorStateChanges[procInst.AppID].LastOrDefault() < DateTime.UtcNow.AddMinutes(-_pingScheduleInterval.TotalMinutes * 2) && !procInst.IsReportSent)
+                if (!_processorStateChanges.TryGetValue(procInst.AppID, out var stateChanges) || stateChanges == null || stateChanges.Count == 0)
+                {
+                    _processorStateChanges[procInst.AppID] = new List<DateTime> { DateTime.UtcNow };
+                    continue;
+                }
+
+                var lastStateChange = stateChanges.Last();
+                if (lastStateChange < DateTime.UtcNow.AddMinutes(-_pingScheduleInterval.TotalMinutes * 2) && !procInst.IsReportSent)
                 {
                     //alert MonitorService not changing state
                     result.Success = false;
-                    var timeSpan = DateTime.UtcNow - _processorStateChanges[procInst.AppID].LastOrDefault();
+                    var timeSpan = DateTime.UtcNow - lastStateChange;
                     string message = "Failed : Processor with AppID " + procInst.AppID + " has not changed state for " + timeSpan.TotalMinutes + " m ";
                     if (procInst.Owner != "root") result = await SendHealthPublicAgentReport(message, procInst);
                     else result = SendHealthReport(message);
