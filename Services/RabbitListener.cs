@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using NetworkMonitor.Scheduler.Services;
 using NetworkMonitor.Objects.Repository;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using NetworkMonitor.Objects.Factory;
 using NetworkMonitor.Utils.Helpers;
@@ -22,6 +23,7 @@ namespace NetworkMonitor.Scheduler.Services
         ResultObj MonitorDataReady(MonitorDataInitObj dataObj);
         Task Shutdown();
         Task<ResultObj> Setup();
+        Task<ResultObj> Setup(CancellationToken cancellationToken);
     }
     public class RabbitListener : RabbitListenerBase, IRabbitListener
     {
