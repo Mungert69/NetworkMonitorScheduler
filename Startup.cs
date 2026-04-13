@@ -78,7 +78,7 @@ namespace NetworkMonitor
             services.AddAsyncServiceInitialization()
                 .AddInitAction<IRabbitRepo>(async (rabbitRepo) =>
                     {
-                        await rabbitRepo.ConnectAndSetUp();
+                        await rabbitRepo.ConnectAndSetUp(_cancellationTokenSource.Token);
                     })
                 .AddInitAction<IServiceState>(async (serviceState) =>
                    {
@@ -86,12 +86,38 @@ namespace NetworkMonitor
                    })
                 .AddInitAction<IRabbitListener>(async (rabbitListener) =>
                     {
-                        await rabbitListener.Setup();
+                        await rabbitListener.Setup(_cancellationTokenSource.Token);
                     })
                 .AddInitAction<IProcessorStateRabbitListner>(async (processorStateRabbitListener) =>
                     {
-                        await processorStateRabbitListener.Setup();
+                        await processorStateRabbitListener.Setup(_cancellationTokenSource.Token);
                     });
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime appLifetime)
+        {
+            appLifetime.ApplicationStopping.Register(() =>
+            {
+                _cancellationTokenSource.Cancel();
+
+                var rabbitRepo = app.ApplicationServices.GetService<IRabbitRepo>();
+                if (rabbitRepo != null)
+                {
+                    rabbitRepo.Shutdown().GetAwaiter().GetResult();
+                }
+
+                var rabbitListener = app.ApplicationServices.GetService<IRabbitListener>();
+                if (rabbitListener != null)
+                {
+                    rabbitListener.Shutdown().GetAwaiter().GetResult();
+                }
+
+                var processorStateRabbitListener = app.ApplicationServices.GetService<IProcessorStateRabbitListner>();
+                if (processorStateRabbitListener != null)
+                {
+                    processorStateRabbitListener.Shutdown().GetAwaiter().GetResult();
+                }
+            });
         }
 
     }
