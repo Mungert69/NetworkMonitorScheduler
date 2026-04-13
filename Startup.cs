@@ -73,7 +73,7 @@ namespace NetworkMonitor
             services.AddSingleton<IProcessorState, ProcessorState>();
 
             services.AddSingleton(_cancellationTokenSource);
-            services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromMinutes(5));
+            services.Configure<HostOptions>(s => s.ShutdownTimeout = TimeSpan.FromSeconds(30));
             services.AddControllers();
             services.AddAsyncServiceInitialization()
                 .AddInitAction<IRabbitRepo>(async (rabbitRepo) =>
