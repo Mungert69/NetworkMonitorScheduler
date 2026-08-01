@@ -64,7 +64,7 @@ namespace NetworkMonitor
             services.AddSingleton<IFileRepo, FileRepo>(
                  provider =>
                  {
-                     return new FileRepo(false, "./state");
+                     return new FileRepo(false, "./state/networkmonitorscheduler");
                  }
              );
             services.AddSingleton<IRabbitListener, RabbitListener>();
