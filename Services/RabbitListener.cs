@@ -184,7 +184,6 @@ namespace NetworkMonitor.Scheduler.Services
                 result,
                 processorObj.AppID,
                 "ProcessorReady",
-                allowUserSetupPublisher: true,
                 allowDefaultPublisher: true))
             {
                 _logger.LogWarning(result.Message);
