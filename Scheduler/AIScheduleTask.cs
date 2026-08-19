@@ -23,20 +23,20 @@ namespace NetworkMonitor.Scheduler
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            string message=" SCHEDULE : Starting AI schedule . ";
+            string message = " SCHEDULE : Starting AI schedule . ";
             IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
             {
                 serviceState.RabbitRepo.PublishAsync("processBlogList", null);
-                message+=" Success : Sent processBlogList event ";
-                 serviceState.RabbitRepo.PublishAsync("fillUserTokens", null);
-                 message+=" Success : Sent fillUserTokens event ";
+                message += " Success : Sent processBlogList event ";
+                serviceState.RabbitRepo.PublishAsync("fillUserTokens", null);
+                message += " Success : Sent fillUserTokens event ";
                 _logger.LogInformation(message);
             }
             catch (Exception e)
             {
-                message+="Error : occured in AIScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString();
+                message += "Error : occured in AIScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString();
                 _logger.LogError(message);
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");

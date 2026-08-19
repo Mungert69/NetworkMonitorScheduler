@@ -13,11 +13,11 @@ namespace NetworkMonitor.Scheduler
 {
     public class DataCheckScheduleTask : ScheduledProcessor
     {
-    
+
         private ILogger _logger;
         public DataCheckScheduleTask(ILogger<DataCheckScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-          
+
             _logger = logger;
             string scheduleStr = config.GetValue<string>("DataCheckSchedule") ?? "* * * * *";
             updateSchedule(scheduleStr);
@@ -45,7 +45,7 @@ namespace NetworkMonitor.Scheduler
                 }
                 else
                 {
-                    message+=" Success : Received Data Service dataCheck response. ";
+                    message += " Success : Received Data Service dataCheck response. ";
                     _logger.LogInformation(message);
                     serviceState.IsMonitorCheckDataReady = false;
                 }
@@ -55,7 +55,7 @@ namespace NetworkMonitor.Scheduler
             }
             catch (Exception e)
             {
-                message+="Error : occured in DataCheckScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString();
+                message += "Error : occured in DataCheckScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString();
                 _logger.LogError(message);
             }
 

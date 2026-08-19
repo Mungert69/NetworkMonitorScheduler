@@ -20,17 +20,17 @@ namespace NetworkMonitor.Scheduler
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            string message=" SCHEDULE : Starting Reset schedule . ";
+            string message = " SCHEDULE : Starting Reset schedule . ";
             IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             try
             {
                 serviceState!.ResetReportSent();
-                message+=" Success :  Reset Schedule Ran . ";
+                message += " Success :  Reset Schedule Ran . ";
                 _logger.LogInformation(message);
             }
             catch (Exception e)
             {
-                message+=" Error : Failed to run Reset schedule : Error Was : " + e.Message.ToString();
+                message += " Error : Failed to run Reset schedule : Error Was : " + e.Message.ToString();
                 _logger.LogError(message);
             }
             return Task.CompletedTask;

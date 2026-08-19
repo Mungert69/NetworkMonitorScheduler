@@ -11,17 +11,17 @@ namespace NetworkMonitor.Scheduler
 {
     public class AlertScheduleTask : ScheduledProcessor
     {
-             private ILogger _logger;
+        private ILogger _logger;
         public AlertScheduleTask(ILogger<AlertScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
             _logger = logger;
-       
+
             string scheduleStr = config.GetValue<string>("AlertSchedule") ?? "* * * * *";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            string message=" SCHEDULE  : Starting Alert schedule  . ";
+            string message = " SCHEDULE  : Starting Alert schedule  . ";
             IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
@@ -29,20 +29,20 @@ namespace NetworkMonitor.Scheduler
                 if (serviceState.IsAlertServiceReady)
                 {
                     serviceState.RabbitRepo.PublishAsync("monitorAlert", null);
-                    message+=" Success : Sent monitorAlert event. ";
+                    message += " Success : Sent monitorAlert event. ";
                     _logger.LogInformation(message);
                     serviceState.IsAlertServiceReady = false;
                 }
                 else
                 {
                     serviceState.RabbitRepo.PublishAsync("serviceWakeUp", null);
-                    message +=" Warning : AlertService has not signalled it is ready ";
+                    message += " Warning : AlertService has not signalled it is ready ";
                     _logger.LogWarning(message);
                 }
             }
             catch (Exception e)
             {
-                message+=" Error : occured in AlertScheduleTask.ProcesInScope() . Error was : " + e.Message.ToString();
+                message += " Error : occured in AlertScheduleTask.ProcesInScope() . Error was : " + e.Message.ToString();
                 _logger.LogError(message);
             }
             return Task.CompletedTask;

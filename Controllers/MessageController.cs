@@ -22,10 +22,10 @@ namespace NetworkMonitor.Scheduler.Controllers
         public MessageController(ILogger<MessageController> logger, IServiceState serviceState)
         {
             _logger = logger;
-            _serviceState=serviceState;
-          
+            _serviceState = serviceState;
+
         }
-       
+
         [HttpGet("ResetReportSent")]
         public ActionResult<ResultObj> ResetReportSent()
         {
@@ -35,8 +35,8 @@ namespace NetworkMonitor.Scheduler.Controllers
 
             try
             {
-               
-                result=_serviceState.ResetReportSent();
+
+                result = _serviceState.ResetReportSent();
                 _logger.LogInformation(result.Message);
             }
             catch (Exception e)
@@ -51,6 +51,6 @@ namespace NetworkMonitor.Scheduler.Controllers
 
         }
 
- 
+
     }
 }

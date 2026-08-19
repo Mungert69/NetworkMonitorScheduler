@@ -11,44 +11,44 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 namespace NetworkMonitor.Scheduler
 {
-    public class MonitorCheckScheduleTask: ScheduledProcessor
+    public class MonitorCheckScheduleTask : ScheduledProcessor
     {
 
         private ILogger _logger;
         public MonitorCheckScheduleTask(ILogger<MonitorCheckScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
-  
-             _logger = logger;
+
+            _logger = logger;
             string scheduleStr = config.GetValue<string>("MonitorCheckSchedule") ?? "* * * * *";
             updateSchedule(scheduleStr);
         }
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            string message=" SCHEDULE : Starting MonitorCheck schedule . ";
+            string message = " SCHEDULE : Starting MonitorCheck schedule . ";
             IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Payment Processing starts here");
             try
             {
-                  if (!serviceState.IsMonitorCheckServiceReady)
+                if (!serviceState.IsMonitorCheckServiceReady)
                 {
-                 
-                   serviceState.RabbitRepo.PublishAsync( "monitorCheck", null );
-                          
+
+                    serviceState.RabbitRepo.PublishAsync("monitorCheck", null);
+
                     message += " Success : Sent monitorCheck to Monitor Service ";
                     _logger.LogInformation(message);
 
                 }
                 else
                 {
-                    message+=" Success : Received Monitor Service monitorCheck response. ";
+                    message += " Success : Received Monitor Service monitorCheck response. ";
                     _logger.LogInformation(message);
                     serviceState.IsMonitorCheckServiceReady = false;
                 }
-                    
+
             }
             catch (Exception e)
             {
-                message+=" Error : Failed to run MonitorCheck schedule  : Error Was : " + e.Message.ToString();
+                message += " Error : Failed to run MonitorCheck schedule  : Error Was : " + e.Message.ToString();
                 _logger.LogError(message);
             }
             //Console.WriteLine("ScheduleService : Ping Processing ends here");

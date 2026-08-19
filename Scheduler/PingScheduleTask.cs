@@ -17,7 +17,7 @@ namespace NetworkMonitor.Scheduler
         private ILogger _logger;
         public PingScheduleTask(ILogger<PingScheduleTask> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration config) : base(serviceScopeFactory)
         {
- 
+
             _logger = logger;
             string scheduleStr = config.GetValue<string>("PingSchedule") ?? "* * * * *";
             updateSchedule(scheduleStr);
@@ -26,14 +26,14 @@ namespace NetworkMonitor.Scheduler
         {
             string message = " SCHEDULE : Starting Ping schedule . ";
             bool success = true;
-            int count=0;
+            int count = 0;
             IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
             //Console.WriteLine("ScheduleService : Ping Processing starts here");
             try
             {
                 ProcessorConnectObj connectObj = new ProcessorConnectObj();
                 connectObj.NextRunInterval = RunScheduleInterval();
-                
+
                 foreach (ProcessorObj procInst in serviceState.EnabledProcessorInstances)
                 {
                     if (procInst.IsReady && procInst.IsEnabled)
@@ -41,7 +41,7 @@ namespace NetworkMonitor.Scheduler
                         //message += " Success : Sent processorConnect event for appID " + procInst.AppID;
                         try
                         {
-                            connectObj.AuthKey=procInst.AuthKey;
+                            connectObj.AuthKey = procInst.AuthKey;
                             serviceState.RabbitRepo.PublishAsync<ProcessorConnectObj>("processorConnect" + procInst.AppID, connectObj);
 
                         }
@@ -74,7 +74,7 @@ namespace NetworkMonitor.Scheduler
                 message += " Error : Failed to run Ping schedule : Error Was : " + e.Message.ToString();
                 success = false;
             }
-            message+=$"Sent connect events to {count} agents";
+            message += $"Sent connect events to {count} agents";
             if (success) _logger.LogInformation(message);
             else _logger.LogError(message);
             //Console.WriteLine("ScheduleService : Ping Processing ends here");
