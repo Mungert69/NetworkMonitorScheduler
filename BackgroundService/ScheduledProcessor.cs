@@ -16,11 +16,11 @@ namespace NetworkMonitor.BackgroundService
             // Return number of milliseconds until between runs.
             DateTime now = DateTime.UtcNow;
             DateTime next = _schedule.GetNextOccurrence(now);
-            DateTime first=_schedule.GetNextOccurrence(next);
-            DateTime second=_schedule.GetNextOccurrence(first);
+            DateTime first = _schedule.GetNextOccurrence(next);
+            DateTime second = _schedule.GetNextOccurrence(first);
             // difference between first and second in milliseconds
             int diff = (int)(second - first).TotalMilliseconds;
-            return diff;    
+            return diff;
 
         }
 
@@ -34,7 +34,7 @@ namespace NetworkMonitor.BackgroundService
         protected void updateSchedule(string newSchedule)
         {
             _schedule = CrontabSchedule.Parse(newSchedule);
-              _nextRun = _schedule.GetNextOccurrence(DateTime.UtcNow);
+            _nextRun = _schedule.GetNextOccurrence(DateTime.UtcNow);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

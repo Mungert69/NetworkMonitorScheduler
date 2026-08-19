@@ -17,7 +17,7 @@ namespace NetworkMonitor.Scheduler.Services
 {
     public class ProcessorInstance
     {
-        public string ID="";
+        public string ID = "";
         public bool IsReady = true;
         public bool IsReportSent = false;
     }
@@ -34,7 +34,7 @@ namespace NetworkMonitor.Scheduler.Services
         List<ProcessorObj> EnabledProcessorInstances { get; }
         ResultObj SetProcessorReady(ProcessorObj procInst);
         bool IsSystemProcessor(string appId);
-        Task <ResultObj> CheckHealth();
+        Task<ResultObj> CheckHealth();
         ResultObj SendHealthReport(string reportMessage);
         ResultObj ResetReportSent();
         public IRabbitRepo RabbitRepo { get; }
@@ -104,7 +104,7 @@ namespace NetworkMonitor.Scheduler.Services
             var processorList = new List<ProcessorObj>();
             try
             {
-                 _fileRepo.CheckFileExistsWithCreateObject<List<ProcessorObj>>("ProcessorList",new List<ProcessorObj>(), _logger);
+                _fileRepo.CheckFileExistsWithCreateObject<List<ProcessorObj>>("ProcessorList", new List<ProcessorObj>(), _logger);
                 processorList = _fileRepo.GetStateJson<List<ProcessorObj>>("ProcessorList");
 
             }
@@ -129,15 +129,18 @@ namespace NetworkMonitor.Scheduler.Services
             //_config.GetSection("ProcessorList").Bind(processorList);
             foreach (var processorObj in _processorState.EnabledProcessorList(true))
             {
-                if ( _processorState.SetProcessorObjIsReportSent(processorObj.AppID, false)){
-                     _processorStateChanges.Add(processorObj.AppID, new List<DateTime>());
-                _logger.LogInformation(" Success : added Processor AppID " + processorObj.AppID);
+                if (_processorState.SetProcessorObjIsReportSent(processorObj.AppID, false))
+                {
+                    _processorStateChanges.Add(processorObj.AppID, new List<DateTime>());
+                    _logger.LogInformation(" Success : added Processor AppID " + processorObj.AppID);
                 }
-                else{
-                     _logger.LogInformation(" Error : failed to set report sent for Processor AppID " + processorObj.AppID);
-               
-                };
-               
+                else
+                {
+                    _logger.LogInformation(" Error : failed to set report sent for Processor AppID " + processorObj.AppID);
+
+                }
+                ;
+
             }
             foreach (KeyValuePair<string, List<DateTime>> entry in _processorStateChanges)
             {
@@ -230,7 +233,7 @@ namespace NetworkMonitor.Scheduler.Services
             _isMonitorDataPurgeReportSent = false;
             _isMonitorCheckDataReportSent = false;
             _isPaymentServiceReady = false;
-            _processorState.SetAllProcessorObjsIsReportSent( false);
+            _processorState.SetAllProcessorObjsIsReportSent(false);
             var result = new ResultObj();
             result.Success = true;
             result.Message = "Success : Reset Report Sent flags.";
@@ -334,7 +337,7 @@ namespace NetworkMonitor.Scheduler.Services
             var result = new ResultObj();
             try
             {
-                if (_processorState.SetProcessorObjIsReady(procInst.AppID,procInst.IsReady))
+                if (_processorState.SetProcessorObjIsReady(procInst.AppID, procInst.IsReady))
                 {
                     EnsureProcessorStateChangeEntry(procInst.AppID).Add(DateTime.UtcNow);
                     result.Success = true;
@@ -400,8 +403,8 @@ namespace NetworkMonitor.Scheduler.Services
             }
             catch (Exception e)
             {
-                 result.Message=" Error - Could not publish event alertMessage for email " + alertMessage.EmailTo + " . Error was " + e.ToString();
-                _logger.LogError(result.Message);       
+                result.Message = " Error - Could not publish event alertMessage for email " + alertMessage.EmailTo + " . Error was " + e.ToString();
+                _logger.LogError(result.Message);
                 result.Success = false;
             }
             return result;
