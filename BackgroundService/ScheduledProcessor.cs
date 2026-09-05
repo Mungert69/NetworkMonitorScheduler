@@ -39,17 +39,21 @@ namespace NetworkMonitor.BackgroundService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            do
+            while (!stoppingToken.IsCancellationRequested)
             {
                 DateTime now = DateTime.UtcNow;
-                if (now > _nextRun)
+                TimeSpan delay = _nextRun - now;
+                if (delay > TimeSpan.Zero)
+                {
+                    await Task.Delay(delay, stoppingToken);
+                }
+
+                if (!stoppingToken.IsCancellationRequested)
                 {
                     await Process();
                     _nextRun = _schedule.GetNextOccurrence(DateTime.UtcNow);
                 }
-                await Task.Delay(5000, stoppingToken); //5 seconds delay
             }
-            while (!stoppingToken.IsCancellationRequested);
         }
     }
 }
