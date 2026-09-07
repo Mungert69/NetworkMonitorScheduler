@@ -13,6 +13,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using HostInitActions;
 using NetworkMonitor.Objects.Repository;
+using NetworkMonitor.Objects.ServiceMessage;
+using NetworkMonitor.Utils;
 using NetworkMonitor.Utils.Helpers;
 
 namespace NetworkMonitor
@@ -60,7 +62,14 @@ namespace NetworkMonitor
             services.AddSingleton<IHostedService, HealthCheckScheduleTask>();
             services.AddSingleton<IHostedService, ResetScheduleTask>();
             services.AddSingleton<IHostedService, AIScheduleTask>();
-            services.AddSingleton<IRabbitRepo, RabbitRepo>();
+            services.AddSingleton<RabbitRepo>();
+            services.AddSingleton<BackendMessageSignatureService>(sp => new BackendMessageSignatureService(
+                Configuration,
+                sp.GetRequiredService<ILogger<BackendMessageSignatureService>>()));
+            services.AddSingleton<IBackendMessageSignatureService>(sp => sp.GetRequiredService<BackendMessageSignatureService>());
+            services.AddSingleton<IRabbitRepo>(sp => new BackendSignedRabbitRepo(
+                sp.GetRequiredService<RabbitRepo>(),
+                sp.GetRequiredService<IBackendMessageSignatureService>()));
             services.AddSingleton<IFileRepo, FileRepo>(
                  provider =>
                  {
