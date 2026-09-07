@@ -67,6 +67,7 @@ namespace NetworkMonitor
                 Configuration,
                 sp.GetRequiredService<ILogger<BackendMessageSignatureService>>()));
             services.AddSingleton<IBackendMessageSignatureService>(sp => sp.GetRequiredService<BackendMessageSignatureService>());
+            services.AddSingleton<IBackendMessageSignatureVerifier, BackendMessageSignatureVerifier>();
             services.AddSingleton<IRabbitRepo>(sp => new BackendSignedRabbitRepo(
                 sp.GetRequiredService<RabbitRepo>(),
                 sp.GetRequiredService<IBackendMessageSignatureService>()));
