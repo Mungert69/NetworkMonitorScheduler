@@ -57,7 +57,10 @@ namespace NetworkMonitor.Scheduler
                     {
                         try
                         {
-                            serviceState.RabbitRepo.PublishAsync("processorWakeUp" + procInst.AppID, null);
+                            serviceState.RabbitRepo.PublishAsync<ProcessorConnectObj>("processorWakeUp" + procInst.AppID, new ProcessorConnectObj
+                            {
+                                AuthKey = procInst.AuthKey
+                            });
                             message += " Warning : Processor " + procInst.AppID + " has not signalled it is ready . ";
 
                         }
