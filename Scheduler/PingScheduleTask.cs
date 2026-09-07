@@ -41,7 +41,6 @@ namespace NetworkMonitor.Scheduler
                         //message += " Success : Sent processorConnect event for appID " + procInst.AppID;
                         try
                         {
-                            connectObj.AuthKey = procInst.AuthKey;
                             serviceState.RabbitRepo.PublishAsync<ProcessorConnectObj>("processorConnect" + procInst.AppID, connectObj);
 
                         }
@@ -57,10 +56,7 @@ namespace NetworkMonitor.Scheduler
                     {
                         try
                         {
-                            serviceState.RabbitRepo.PublishAsync<ProcessorConnectObj>("processorWakeUp" + procInst.AppID, new ProcessorConnectObj
-                            {
-                                AuthKey = procInst.AuthKey
-                            });
+                            serviceState.RabbitRepo.PublishAsync("processorWakeUp" + procInst.AppID, null);
                             message += " Warning : Processor " + procInst.AppID + " has not signalled it is ready . ";
 
                         }
