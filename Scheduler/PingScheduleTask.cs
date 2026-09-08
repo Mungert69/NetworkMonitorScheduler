@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using NetworkMonitor.Objects.Repository.Helpers;
 namespace NetworkMonitor.Scheduler
 {
     public class PingScheduleTask : ScheduledProcessor
@@ -41,7 +42,7 @@ namespace NetworkMonitor.Scheduler
                         //message += " Success : Sent processorConnect event for appID " + procInst.AppID;
                         try
                         {
-                            serviceState.RabbitRepo.PublishAsync<ProcessorConnectObj>("processorConnect" + procInst.AppID, connectObj);
+                            ProcessorRabbitPublisher.PublishAsync(serviceState.RabbitRepo, procInst.AppID, "processorConnect", connectObj, procInst.RabbitTopologyVersion);
 
                         }
                         catch (Exception e)
@@ -56,7 +57,7 @@ namespace NetworkMonitor.Scheduler
                     {
                         try
                         {
-                            serviceState.RabbitRepo.PublishAsync("processorWakeUp" + procInst.AppID, null);
+                            ProcessorRabbitPublisher.PublishAsync(serviceState.RabbitRepo, procInst.AppID, "processorWakeUp", null, procInst.RabbitTopologyVersion);
                             message += " Warning : Processor " + procInst.AppID + " has not signalled it is ready . ";
 
                         }
