@@ -30,6 +30,13 @@
     <ContainerRepository>mungert/networkmonitorscheduler</ContainerRepository>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(_IsPublishing)'=='true'">
+    <PublishReadyToRun>true</PublishReadyToRun>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release-Dev' AND '$(_IsPublishing)'=='true'">
+    <PublishReadyToRun>true</PublishReadyToRun>
+  </PropertyGroup>
+
 <PropertyGroup>
     <Nullable>enable</Nullable>
 </PropertyGroup>
