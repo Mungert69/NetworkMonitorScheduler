@@ -28,10 +28,12 @@ namespace NetworkMonitor.Scheduler.Services
     public class RabbitListener : RabbitListenerBase, IRabbitListener
     {
         private IServiceState _serviceState;
-        public RabbitListener(IServiceState serviceState, ILogger<RabbitListenerBase> logger, SystemParams systemParams) : base(logger, DeriveSystemUrl(systemParams))
+        private readonly IBackendMessageHmacService _backendHmac;
+        public RabbitListener(IServiceState serviceState, ILogger<RabbitListenerBase> logger, SystemParams systemParams, IBackendMessageHmacService backendHmac) : base(logger, DeriveSystemUrl(systemParams))
 
         {
             _serviceState = serviceState;
+            _backendHmac = backendHmac;
         }
 
 
@@ -135,10 +137,9 @@ namespace NetworkMonitor.Scheduler.Services
                                  });
                                  break;
                              case "predictServiceReady":
-                                 await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "predictServiceReady", (model, ea) =>
+                                 await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "predictServiceReady", async (model, ea) =>
                                  {
-                                     result = PredictServiceReady(ConvertToObject<MonitorMLInitObj>(model, ea));
-                                     return Task.CompletedTask;
+                                     result = await PredictServiceReady(ConvertToObject<MonitorMLInitObj>(model, ea));
                                  });
                                  break;
 
@@ -361,7 +362,7 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
-        public ResultObj PredictServiceReady([FromBody] MonitorMLInitObj? serviceObj)
+        public async Task<ResultObj> PredictServiceReady([FromBody] MonitorMLInitObj? serviceObj)
         {
             ResultObj result = new ResultObj();
             result.Success = false;
@@ -370,6 +371,12 @@ namespace NetworkMonitor.Scheduler.Services
             {
                 result.Success = false;
                 result.Message += " Error : serviceObj is null .";
+                return result;
+            }
+            if (!await _backendHmac.VerifyAsync("predictServiceReady", "predictServiceReady", serviceObj))
+            {
+                result.Message += " Error : invalid backend HMAC.";
+                _logger.LogWarning(result.Message);
                 return result;
             }
             try
