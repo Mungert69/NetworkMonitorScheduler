@@ -373,7 +373,8 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += " Error : serviceObj is null .";
                 return result;
             }
-            if (!await _backendHmac.VerifyAsync("predictServiceReady", "predictServiceReady", serviceObj))
+            if (!MessageSecurityPolicyRegistry.Requires("predictServiceReady", "predictServiceReady", MessageProtection.BackendHmac) ||
+                !await _backendHmac.VerifyAsync("predictServiceReady", "predictServiceReady", serviceObj))
             {
                 result.Message += " Error : invalid backend HMAC.";
                 _logger.LogWarning(result.Message);
