@@ -109,31 +109,27 @@ namespace NetworkMonitor.Scheduler.Services
                                  });
                                  break;
                              case "paymentServiceReady":
-                                 await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "paymentServiceReady", (model, ea) =>
+                                 await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "paymentServiceReady", async (model, ea) =>
                                  {
-                                     result = PaymentServiceReady(ConvertToObject<PaymentServiceInitObj>(model, ea));
-                                     return Task.CompletedTask;
+                                     result = await PaymentServiceReadyAsync(ConvertToObject<PaymentServiceInitObj>(model, ea));
                                  });
                                  break;
                              case "alertServiceReady":
-                                 await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "alertServiceReady", (model, ea) =>
+                                 await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "alertServiceReady", async (model, ea) =>
                                  {
-                                     result = AlertServiceReady(ConvertToObject<AlertServiceInitObj>(model, ea));
-                                     return Task.CompletedTask;
+                                     result = await AlertServiceReadyAsync(ConvertToObject<AlertServiceInitObj>(model, ea));
                                  });
                                  break;
                              case "monitorServiceReady":
-                                 await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "monitorServiceReady", (model, ea) =>
+                                 await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "monitorServiceReady", async (model, ea) =>
                                  {
-                                     result = MonitorServiceReady(ConvertToObject<MonitorServiceInitObj>(model, ea));
-                                     return Task.CompletedTask;
+                                     result = await MonitorServiceReadyAsync(ConvertToObject<MonitorServiceInitObj>(model, ea));
                                  });
                                  break;
                              case "monitorDataReady":
-                                 await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "monitorDataReady", (model, ea) =>
+                                 await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "monitorDataReady", async (model, ea) =>
                                  {
-                                     result = MonitorDataReady(ConvertToObject<MonitorDataInitObj>(model, ea));
-                                     return Task.CompletedTask;
+                                     result = await MonitorDataReadyAsync(ConvertToObject<MonitorDataInitObj>(model, ea));
                                  });
                                  break;
                              case "predictServiceReady":
@@ -257,6 +253,13 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
+        private async Task<ResultObj> PaymentServiceReadyAsync(PaymentServiceInitObj? paymentObj)
+        {
+            var result = new ResultObj { Success = false, Message = "MessageAPI : PaymentServiceReady : " };
+            if (!await ValidateBackendHmacAsync("paymentServiceReady", paymentObj, result)) return result;
+            return PaymentServiceReady(paymentObj);
+        }
+
 
         public ResultObj AlertServiceReady([FromBody] AlertServiceInitObj? alertObj)
         {
@@ -287,6 +290,13 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
+        private async Task<ResultObj> AlertServiceReadyAsync(AlertServiceInitObj? alertObj)
+        {
+            var result = new ResultObj { Success = false, Message = "MessageAPI : AlertServiceReady : " };
+            if (!await ValidateBackendHmacAsync("alertServiceReady", alertObj, result)) return result;
+            return AlertServiceReady(alertObj);
+        }
+
         public ResultObj MonitorServiceReady([FromBody] MonitorServiceInitObj? serviceObj)
         {
             ResultObj result = new ResultObj();
@@ -314,6 +324,13 @@ namespace NetworkMonitor.Scheduler.Services
             }
             return result;
 
+        }
+
+        private async Task<ResultObj> MonitorServiceReadyAsync(MonitorServiceInitObj? serviceObj)
+        {
+            var result = new ResultObj { Success = false, Message = "MessageAPI : MonitorServiceReady : " };
+            if (!await ValidateBackendHmacAsync("monitorServiceReady", serviceObj, result)) return result;
+            return MonitorServiceReady(serviceObj);
         }
 
 
@@ -362,6 +379,13 @@ namespace NetworkMonitor.Scheduler.Services
 
         }
 
+        private async Task<ResultObj> MonitorDataReadyAsync(MonitorDataInitObj? dataObj)
+        {
+            var result = new ResultObj { Success = false, Message = "MessageAPI : MonitorDataReady : " };
+            if (!await ValidateBackendHmacAsync("monitorDataReady", dataObj, result)) return result;
+            return MonitorDataReady(dataObj);
+        }
+
         public async Task<ResultObj> PredictServiceReady([FromBody] MonitorMLInitObj? serviceObj)
         {
             ResultObj result = new ResultObj();
@@ -373,13 +397,7 @@ namespace NetworkMonitor.Scheduler.Services
                 result.Message += " Error : serviceObj is null .";
                 return result;
             }
-            if (!MessageSecurityPolicyRegistry.Requires("predictServiceReady", "predictServiceReady", MessageProtection.BackendHmac) ||
-                !await _backendHmac.VerifyAsync("predictServiceReady", "predictServiceReady", serviceObj))
-            {
-                result.Message += " Error : invalid backend HMAC.";
-                _logger.LogWarning(result.Message);
-                return result;
-            }
+            if (!await ValidateBackendHmacAsync("predictServiceReady", serviceObj, result)) return result;
             try
             {
                 _serviceState.IsPredictServiceReady = serviceObj.IsMLReady;
@@ -396,6 +414,18 @@ namespace NetworkMonitor.Scheduler.Services
             }
             return result;
 
+        }
+
+        private async Task<bool> ValidateBackendHmacAsync(string operation, IBackendSignedMessage? message, ResultObj result)
+        {
+            if (MessageSecurityPolicyRegistry.Requires(operation, operation, MessageProtection.BackendHmac) &&
+                message != null &&
+                await _backendHmac.VerifyAsync(operation, operation, message).ConfigureAwait(false)) return true;
+
+            result.Success = false;
+            result.Message += " Error : invalid backend HMAC.";
+            _logger.LogWarning("Scheduler message rejected. Operation={Operation}.", operation);
+            return false;
         }
 
 
