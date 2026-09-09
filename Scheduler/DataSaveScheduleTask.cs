@@ -20,7 +20,7 @@ namespace NetworkMonitor.Scheduler
             string scheduleStr = config.GetValue<string>("DataSaveSchedule") ?? "0 */6 * * *";
             updateSchedule(scheduleStr);
         }
-        public override Task ProcessInScope(IServiceProvider serviceProvider)
+        public override async Task ProcessInScope(IServiceProvider serviceProvider)
         {
             string message = " SCHEDULE  : Starting Save schedule  . ";
             IServiceState serviceState = serviceProvider.GetService<IServiceState>()!;
@@ -29,7 +29,7 @@ namespace NetworkMonitor.Scheduler
             {
                 if (serviceState.IsMonitorDataSaveReady)
                 {
-                    serviceState.RabbitRepo.PublishAsync("saveData", null);
+                    await serviceState.RabbitRepo.PublishAsync("saveData", null);
                     message += " Success : Sent saveData event.";
                     _logger.LogInformation(message);
                     serviceState.IsMonitorDataSaveReady = false;
@@ -41,7 +41,7 @@ namespace NetworkMonitor.Scheduler
                         IsDataSaveReady = true,
                         IsDataSaveMessage = true
                     };
-                    serviceState.RabbitRepo.PublishAsync<MonitorDataInitObj>("dataCheck", serviceObj);
+                    await serviceState.RabbitRepo.PublishAsync<MonitorDataInitObj>("dataCheck", serviceObj);
                     message += " Warning : DataSave has not signalled it is ready. Sent dataCheck event .";
                     _logger.LogWarning(message);
                 }
@@ -51,7 +51,6 @@ namespace NetworkMonitor.Scheduler
                 message += " Error : occured in SaveScheduleTask.ProcesInScope() : Error Was : " + e.Message.ToString();
                 _logger.LogError(message);
             }
-            return Task.CompletedTask;
         }
     }
 }
