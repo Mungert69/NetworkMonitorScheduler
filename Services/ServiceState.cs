@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Extensions.Configuration;
 using NetworkMonitor.Objects;
 using MailKit.Net.Smtp;
@@ -34,6 +36,7 @@ namespace NetworkMonitor.Scheduler.Services
         List<ProcessorObj> EnabledProcessorInstances { get; }
         ResultObj SetProcessorReady(ProcessorObj procInst);
         bool IsSystemProcessor(string appId);
+        bool HasCurrentProcessorAuthKey(string appId, string authKey);
         Task<ResultObj> CheckHealth();
         ResultObj SendHealthReport(string reportMessage);
         ResultObj ResetReportSent();
@@ -331,6 +334,16 @@ namespace NetworkMonitor.Scheduler.Services
         {
             var processor = _processorState.GetProcessorFromID(appId, false);
             return processor != null && !processor.IsPrivate;
+        }
+        public bool HasCurrentProcessorAuthKey(string appId, string authKey)
+        {
+            if (string.IsNullOrWhiteSpace(appId) || string.IsNullOrEmpty(authKey)) return false;
+            string? expected = _processorState.AuthKeyFromID(appId);
+            if (string.IsNullOrEmpty(expected)) return false;
+            byte[] actualBytes = Encoding.UTF8.GetBytes(authKey);
+            byte[] expectedBytes = Encoding.UTF8.GetBytes(expected);
+            return actualBytes.Length == expectedBytes.Length &&
+                CryptographicOperations.FixedTimeEquals(actualBytes, expectedBytes);
         }
         public ResultObj SetProcessorReady(ProcessorObj procInst)
         {

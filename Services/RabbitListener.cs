@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NetworkMonitor.Scheduler.Services;
 using NetworkMonitor.Objects.Repository;
+using NetworkMonitor.Objects.Repository.Helpers;
+using System.Collections.Generic;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,6 +51,17 @@ namespace NetworkMonitor.Scheduler.Services
                 FuncName = "processorReady",
                 MessageTimeout = 60000
             });
+            if (_systemUrl.EnableMqttProcessorIngress)
+            {
+                _rabbitMQObjs.Add(new RabbitMQObj {
+                    ExchangeName = ProcessorMqttTopology.Exchange,
+                    FuncName = "mqttProcessorReady",
+                    Type = ExchangeType.Topic,
+                    DeclareExchange = false,
+                    RoutingKeys = new List<string> { ProcessorMqttTopology.Ready },
+                    MessageTimeout = 60000
+                });
+            }
             _rabbitMQObjs.Add(new RabbitMQObj()
             {
                 ExchangeName = "paymentServiceReady",
@@ -108,6 +121,15 @@ namespace NetworkMonitor.Scheduler.Services
                                      return Task.CompletedTask;
                                  });
                                  break;
+                             case "mqttProcessorReady":
+                                 await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "mqttProcessorReady", (model, ea) =>
+                                 {
+                                     result = ProcessorReady(
+                                         ConvertToObject<ProcessorInitObj>(model, ea, ProcessorMqttTopology.Ready),
+                                         IsMqttProcessorIngress(ea, ProcessorMqttTopology.Ready));
+                                     return Task.CompletedTask;
+                                 });
+                                 break;
                              case "paymentServiceReady":
                                  await RegisterConsumerHandlerAsync(rabbitMQObj, 1, "paymentServiceReady", async (model, ea) =>
                                  {
@@ -157,6 +179,9 @@ namespace NetworkMonitor.Scheduler.Services
         }
 
         public ResultObj ProcessorReady(ProcessorInitObj? processorObj)
+            => ProcessorReady(processorObj, false);
+
+        public ResultObj ProcessorReady(ProcessorInitObj? processorObj, bool mqttIngress)
         {
             ResultObj result = new ResultObj();
             result.Success = false;
@@ -176,8 +201,15 @@ namespace NetworkMonitor.Scheduler.Services
                 _logger.LogWarning(result.Message);
                 return result;
             }
+            if (mqttIngress && !_serviceState.HasCurrentProcessorAuthKey(
+                    processorObj.AppID, processorObj.AuthKey))
+            {
+                result.Message += " MQTT processor AuthKey is invalid.";
+                _logger.LogWarning(result.Message);
+                return result;
+            }
             var isSystemProcessor = _serviceState.IsSystemProcessor(processorObj.AppID);
-            if (enforcePublisherIdentity && !isSystemProcessor && !ValidatePublisherIdentityForApp(
+            if (enforcePublisherIdentity && !mqttIngress && !isSystemProcessor && !ValidatePublisherIdentityForApp(
                 result,
                 processorObj.AppID,
                 "ProcessorReady",
